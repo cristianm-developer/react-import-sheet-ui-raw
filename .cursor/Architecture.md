@@ -294,24 +294,24 @@ src/
 
 ## Construction Steps
 
-Plan de construcción por pasos. Ejecutar en orden. Cada step tiene su checklist en `Construction Steps/`.
+Plan de construcción por pasos. Ejecutar en orden. Cada step tiene su checklist en `Construction Steps/`. Enfoque **hooks y prop-getters**; wrappers opcionales.
 
-| Step  | Archivo                                                                                           | Descripción                                                                                                                                                                                             |
-| ----- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **1** | [step-01-settings.md](Construction%20Steps/step-01-settings.md)                                   | Settings: stack, dependencias, ESLint, Prettier, Vitest, Storybook, Husky, lint-staged, Commitlint                                                                                                      |
-| **2** | [step-02-root-and-status-guard.md](Construction%20Steps/step-02-root-and-status-guard.md)         | RawImporterRoot (layout, **fuzzyMatch**, **stages**, **editingEnabled**), RawStatusGuard, hooks reexport, **Public API** (index selectivo)                                                              |
-| **3** | [step-03-input-phase-components.md](Construction%20Steps/step-03-input-phase-components.md)       | Entrada: RawFilePicker, RawMappingTable, RawMappingRow, **RawMappingSuggest** (fuzzy + param off), RawImportAction                                                                                      |
-| **4** | [step-04-feedback-phase-components.md](Construction%20Steps/step-04-feedback-phase-components.md) | Feedback: RawProgressDisplay, RawStatusIndicator (**errorDetail** alineado con headless), RawAbortButton; **RawErrorBoundary**; telemetría vía **useImporter().metrics** o wrapper useImporterMetrics() |
-| **5** | [step-05-core-visual-data-table.md](Construction%20Steps/step-05-core-visual-data-table.md)       | Datos: RawDataTable (**A11y** Roaming Tabindex, **editingEnabled**), RawTableBody (**isPlaceholder**), RawTableRow (onKeyDown), RawTableCell (**render prop**), RawErrorBadge                           |
-| **6** | [step-06-view-phase-components.md](Construction%20Steps/step-06-view-phase-components.md)         | Salida: RawPagination, RawFilterToggle, RawExportButton, RawPersistenceBanner                                                                                                                           |
-| **7** | [step-07-orchestrator-workflow.md](Construction%20Steps/step-07-orchestrator-workflow.md)         | Orquestador: RawImporterWorkflow (máquina de estados + composición de todos los Raw)                                                                                                                    |
+| Step  | Archivo                                                                                             | Descripción                                                                                                                                                                       |
+| ----- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1** | [step-01-settings.md](Construction%20Steps/step-01-settings.md)                                     | Settings: stack, dependencias, ESLint, Prettier, Vitest, Storybook, Husky, lint-staged, Commitlint                                                                                |
+| **2** | [step-02-root-and-status-view-hooks.md](Construction%20Steps/step-02-root-and-status-view-hooks.md) | Root & Status View: useRawImporterRoot, useStatusView; reexport headless; Public API; opcional RawImporterRoot, RawStatusGuard                                                    |
+| **3** | [step-03-input-phase-hooks.md](Construction%20Steps/step-03-input-phase-hooks.md)                   | Entrada: useRawFilePicker (getRootProps, getInputProps), useRawMappingTable, useRawMappingRow, useRawMappingSuggest, useRawImportAction; wrappers opcionales                      |
+| **4** | [step-04-feedback-phase-hooks.md](Construction%20Steps/step-04-feedback-phase-hooks.md)             | Feedback: useRawProgress, useRawStatus (errorDetail), useRawAbort; RawErrorBoundary; useImporter().metrics; wrappers opcionales                                                   |
+| **5** | [step-05-data-phase-hooks.md](Construction%20Steps/step-05-data-phase-hooks.md)                     | Datos: useRawDataTable, useRawTableHead, useRawTableBody (getRowProps), useRawTableRow, useRawCell (getCellProps, getEditInputProps), useRawErrorBadge; A11y; wrappers opcionales |
+| **6** | [step-06-view-phase-hooks.md](Construction%20Steps/step-06-view-phase-hooks.md)                     | Salida: useRawPagination, useRawFilterToggle, useRawExport, useRawPersistence; wrappers opcionales                                                                                |
+| **7** | [step-07-orchestrator-workflow.md](Construction%20Steps/step-07-orchestrator-workflow.md)           | Orquestador: RawImporterWorkflow (compone hooks o wrappers por vista: IDLE → FilePicker; MAPPING → Mapping; PROCESSING → Progress + Abort; RESULT → Toolbar + Grid + Footer)      |
 
 ---
 
 ## Estado actual
 
-- **Step en curso:** según avance (Step 4 completado en componentes anteriores; nombres alineados con esta arquitectura).
-- **Prioridad:** Implementar y documentar los **hooks useRaw\*** como núcleo; los wrappers (RawFilePicker, RawTableCell, etc.) son capa opcional que usa esos hooks. El orquestador **RawImporterWorkflow** se implementa en Step 7 y compone hooks (o wrappers).
+- **Step en curso:** según avance. Los Construction Steps están alineados con arquitectura **hooks-first**: cada step (2–6) implementa **hooks** y prop-getters; wrappers son opcionales.
+- **Prioridad:** Implementar y documentar los **hooks useRaw\*** como núcleo (getRootProps, getInputProps, getCellProps, getRowProps, etc.); los wrappers (RawFilePicker, RawTableCell, etc.) son capa opcional que usa esos hooks. El orquestador **RawImporterWorkflow** (Step 7) compone hooks (o wrappers) por vista.
 - **Documentación:** `ai-context.md` se actualiza por **hook** (getters, estado, acciones) para que integradores y futuras libs de UI sepan consumir la lib solo con hooks. La lib mantiene **contrato estándar** (data-_, aria-_) y **no integra** virtualización ni UI; el consumidor aplica estilos e integraciones.
 
 ---

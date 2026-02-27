@@ -1,0 +1,49 @@
+---
+description: Prefijo useRaw en hooks de la API pública y typings de prop-getters que aceptan userProps
+globs: "**/*.ts,**/*.tsx"
+alwaysApply: false
+---
+
+# Raw API: Hooks (namespacing) y Prop-Getters (typings)
+
+## 1. Namespacing de hooks (Public API)
+
+Todos los **hooks propios de esta lib** que forman parte de la API pública y devuelven estado + **prop-getters para el DOM** deben usar el prefijo **`useRaw`**.
+
+- **Objetivo:** Evitar colisiones con los hooks del Headless (`useSheetData`, `useImporter`, `useConvert`, etc.) y dejar explícito que estos hooks devuelven Prop-Getters para el consumidor (celda, fila, tabla, etc.).
+- Los hooks **reexportados del Headless** no se renombran; solo los hooks implementados en esta lib llevan el prefijo `useRaw`.
+
+```typescript
+// ✅ Hooks de la API Raw (esta lib)
+useRawImporterRoot, useRawStatusView, useRawCell, useRawTable, useRawFilePicker, useRawProgress, …
+
+// ✅ Reexportados del Headless (sin prefijo)
+useImporterStatus, useConvert, useSheetData, useSheetEditor, processFile, abort, …
+```
+
+## 2. Typings de los Prop-Getters (userProps)
+
+Los **getters** (`getCellProps`, `getRowProps`, `getInputProps`, etc.) deben aceptar **userProps** y fusionarlos con la lógica interna. TypeScript debe tipar el parámetro para que el usuario pueda pasar props (p. ej. `onClick`, `className`, `aria-*`) y el getter las combine correctamente.
+
+- El getter **fusiona** las props internas (role, aria-invalid, data-pending, handlers de edición) con las del usuario; los handlers del usuario no se sobrescriben: se ejecutan además de la lógica interna (o se combinan según diseño).
+- Tipar el argumento del getter como **genérico que extiende las props del elemento** (o `React.HTMLAttributes<…>`) para que `getCellProps({ onClick: myFunc })` sea válido y el retorno tenga el tipo correcto.
+
+```typescript
+// ✅ Firma que acepta userProps y devuelve props fusionadas
+type GetCellProps = <T extends React.HTMLAttributes<HTMLTableCellElement>>(
+  userProps?: T
+) => T & { role: 'gridcell'; 'aria-invalid'?: boolean; 'data-pending'?: string; onClick: (e: React.MouseEvent<HTMLTableCellElement>) => void; … };
+
+// Uso esperado: el usuario puede añadir su onClick y se fusiona con la lógica interna
+const { getCellProps } = useRawCell(cell);
+<td {...getCellProps({ onClick: myFunc, className: 'my-cell' })} />
+```
+
+- En la **implementación**, al fusionar handlers (p. ej. `onClick`): invocar primero el handler interno (edición/foco) y después el del usuario si existe, para no romper el comportamiento de la celda.
+
+## Resumen
+
+| Aspecto | Regla |
+|--------|--------|
+| Hooks de esta lib (prop-getters) | Prefijo `useRaw`; Headless reexportado sin renombrar |
+| Prop-getters | Aceptar `userProps` tipados; fusionar con props internas; combinar handlers (interno + usuario) |
