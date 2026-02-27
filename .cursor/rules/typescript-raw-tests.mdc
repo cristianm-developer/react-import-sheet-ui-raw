@@ -1,0 +1,51 @@
+---
+description: TypeScript raw (sin CSS), sin comentarios innecesarios, tests unitarios colocados junto a cada archivo
+globs: "**/*.ts,**/*.tsx"
+alwaysApply: false
+---
+
+# TypeScript: raw, mínimo comentarios, tests al lado
+
+## Comentarios
+
+- No escribir comentarios salvo cuando aporten **contexto útil para la IA** (decisiones no obvias, restricciones de negocio, trampas conocidas).
+- Evitar comentarios decorativos, explicaciones de lo que hace el código literal o bloques de autoría.
+
+```typescript
+// ❌ Evitar
+// Obtiene el usuario
+const user = await getUser(id);
+
+// ✅ Aceptable solo si el contexto es necesario para la IA
+// El backend devuelve 204 sin body; no lanzar si status === 204
+if (res.status !== 204) body = await res.json();
+```
+
+## Sin CSS
+
+- Este código es **solo raw**: lógica, tipos, utilidades, API. No incluir estilos, CSS, ni referencias a clases/estilos.
+- Si hace falta UI, limitarse a estructura y datos; los estilos quedan fuera de alcance de esta regla.
+
+## Tests unitarios
+
+- Por cada archivo **nuevo** que crees (`.ts` o `.tsx`), crea un test unitario **en la misma carpeta**, al lado del archivo.
+- Nombre del test: `nombreDelArchivo.test.ts` o `nombreDelArchivo.test.tsx` (por ejemplo `parser.ts` → `parser.test.ts`).
+- Los tests deben ser reales (assertions, casos límite), no placeholders.
+
+```text
+src/
+  utils/
+    parser.ts
+    parser.test.ts
+  api/
+    client.ts
+    client.test.ts
+```
+
+## Resumen
+
+| Regla | Aplicación |
+|-------|------------|
+| Comentarios | Solo cuando den contexto importante para la IA |
+| CSS/estilos | No usar; proyecto raw |
+| Tests | Uno por archivo nuevo, mismo directorio, `*.test.ts` / `*.test.tsx` |

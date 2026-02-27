@@ -1,0 +1,51 @@
+---
+description: Al crear un componente, crear su story de Storybook como ejemplo de uso y apariencia
+globs: "src/components/**/*.tsx"
+alwaysApply: false
+---
+
+# Storybook: story por componente
+
+Al crear un **nuevo componente** (o un componente que aún no tiene story), hay que crear su **story de Storybook** en paralelo.
+
+## Objetivo
+
+- Servir de **ejemplo visual** de cómo se ve el componente.
+- Servir de **ejemplo de uso** (props, children, contexto) para quien lo consuma.
+
+## Dónde y cómo
+
+- **Ubicación**: junto al componente o en `stories/` / `src/stories/`. Si el proyecto coloca stories junto al componente: `ComponentName/ComponentName.stories.tsx`.
+- **Contenido mínimo**:
+  - Una story **Default** que muestre el componente en un estado representativo.
+  - Props documentadas o controlables con controls cuando aporte valor (ej. variantes, texto, disabled).
+  - Si el componente depende de contexto (provider, headless), montar el provider en la story o documentar cómo usarlo.
+
+## Ejemplo (CSF3)
+
+```tsx
+// RawButton.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { RawButton } from './RawButton';
+
+const meta: Meta<typeof RawButton> = {
+  component: RawButton,
+  tags: ['autodocs'],
+};
+export default meta;
+
+type Story = StoryObj<typeof RawButton>;
+
+export const Default: Story = {
+  args: {
+    label: 'Importar',
+    disabled: false,
+  },
+};
+```
+
+## Checklist
+
+- [ ] Existe un archivo `*.stories.tsx` (o `*.stories.ts`) para el componente.
+- [ ] La story muestra un ejemplo real de uso y apariencia.
+- [ ] `npm run storybook` muestra la story correctamente.

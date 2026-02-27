@@ -1,0 +1,55 @@
+---
+description: Contrato de componentes Raw: ref al root, clase única, className y style obligatorios
+globs: "src/components/**/*.tsx"
+alwaysApply: false
+---
+
+# Componentes Raw — ref, clase única, className y style
+
+Para **todo componente** creado en `src/components/`:
+
+## 1. Ref al elemento raíz
+
+- Exponer un **ref** (object ref) al **div (o elemento) principal** del componente.
+- Permite al consumidor estilizar o medir ese elemento desde fuera (Tailwind, CSS, medición).
+
+```tsx
+// ✅ El componente acepta ref y lo asigna al contenedor raíz
+export const RawTable = forwardRef<HTMLDivElement, RawTableProps>(
+  function RawTable({ className, style, ...props }, ref) {
+    return (
+      <div ref={ref} className={className} style={style} data-ris-ui="raw-table">
+        {/* ... */}
+      </div>
+    );
+  }
+);
+```
+
+## 2. Clase única y precisa
+
+- El elemento raíz (y subelementos si aplica) debe tener una **clase** o **data-attribute** **única y precisa** para que el consumidor pueda seleccionarla sin colisiones.
+- Convención: prefijo del paquete + nombre del componente, p. ej. **`data-ris-ui="raw-table"`** o clase **`ris-ui-raw--RawTable`**. Usar una sola convención en todo el proyecto.
+
+## 3. Props mínimas: className y style
+
+- **Siempre** recibir como mínimo:
+  - **`className?: string`** — para que el consumidor añada clases (Tailwind, BEM, etc.).
+  - **`style?: React.CSSProperties`** — para estilos inline si hace falta.
+- Extender de un tipo que incluya estas props (o `React.ComponentPropsWithoutRef<'div'>`) y añadir las propias.
+
+```tsx
+export interface RawTableProps {
+  className?: string;
+  style?: React.CSSProperties;
+  // ... resto de props del componente
+}
+```
+
+## Resumen
+
+| Requisito | Aplicación |
+|-----------|------------|
+| Ref | forwardRef; asignar ref al div/elemento principal |
+| Identificación | Clase o data-attribute única (ej. `data-ris-ui="raw-table"` o `ris-ui-raw--RawTable`) |
+| Props mínimas | `className` y `style` en todos los componentes Raw |

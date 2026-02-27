@@ -1,0 +1,55 @@
+---
+description: Sincronización técnica con headless, Architecture, devlog y consistencia Raw (sin CSS)
+alwaysApply: true
+---
+
+# Regla de Sincronización Técnica — @cristianm/react-import-sheet-ui-raw
+
+Esta librería consume **@cristianm/react-import-sheet-headless**. El contrato técnico del headless está en: https://github.com/cristianm-developer/react-import-sheet-headless/blob/main/ai-context.md.
+
+---
+
+## 1. Referencia externa obligatoria
+
+Antes de sugerir **cualquier implementación** que use Hooks o Providers del headless:
+
+- **Consulta** el [ai-context.md del headless](https://github.com/cristianm-developer/react-import-sheet-headless/blob/main/ai-context.md) (remoto).
+- Respeta el **pipeline**: **Parser → Convert → Sanitizer → Validator → Transform** (orden fijo).
+- Respeta el **manejo de errores** y los contratos (SheetLayout, SheetError, useSheetData, useSheetEditor, useSheetView, etc.).
+
+---
+
+## 2. Mantenimiento de memoria local
+
+### Antes de cada tarea
+
+- **Lee** `@.cursor/Architecture.md` para entender el alcance del Step actual y la estructura del proyecto.
+
+### Después de cada cambio significativo
+
+- **Actualiza** `@.cursor/devlog.md`: progreso diario / cronológico (qué se hizo, en qué archivos).
+- **Actualiza** `@.cursor/history.md`: decisiones de arquitectura (por qué se eligió un patrón de UI, ADRs).
+
+### Cambios de feature o estructura
+
+- **Actualiza** `@.cursor/Architecture.md` cuando cambien features o la estructura (nuevos componentes, pasos, módulos). Mantén el esquema de Steps y el estado actual del proyecto al día.
+
+---
+
+## 3. Consistencia Raw (sin estilos)
+
+- **No** añadir estilos: ni CSS ni inline styles ni clases visuales.
+- Si detectas un intento de añadir clases de presentación o estilos, **corrígelo** sugiriendo:
+  - **Prop-Getter**: el componente expone props (ej. `getCellProps`, `getRowProps`) que el consumidor usa para aplicar sus propias clases/estilos.
+  - **Slot**: render props o slots para que el consumidor inyecte su propio markup/estilos.
+
+---
+
+## 4. Publicación y consumo por otras librerías (Tailwind/CSS)
+
+Al **finalizar el desarrollo** de un componente Raw (ej. RawTable, RawErrorList):
+
+- **Actualiza** el archivo local **`ai-context.md`** (en esta librería de UI).
+- Ese archivo debe explicar a las **futuras librerías** (Tailwind, CSS, etc.) **cómo consumir los componentes Raw**: qué props/slots/getters exponen, cómo componerlos con el headless y cómo aplicar estilos desde fuera (Prop-Getters, Slots, estructura DOM esperada).
+
+Objetivo: que una lib de presentación (p. ej. con Tailwind) pueda usar esta UI raw sin tocar su código; solo leyendo `ai-context.md` de esta lib.

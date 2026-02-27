@@ -1,0 +1,51 @@
+---
+description: Crear how-to (ldocs) al generar un componente o feature, documentando su uso
+alwaysApply: true
+---
+
+# How-to y ldocs al crear componentes o features
+
+Cada vez que se **cree un componente nuevo** o una **feature nueva**, se debe crear también un **how-to** en formato doc (ldocs) que explique los detalles de uso.
+
+## Dónde van los ldocs
+
+- Carpeta: **`ldocs/`** en la raíz del proyecto (o la que el proyecto defina).
+- Un doc por componente o feature. Nombre descriptivo, p. ej.:
+  - `ldocs/how-to-raw-table.md`
+  - `ldocs/how-to-import-wizard.md`
+
+## Contenido mínimo del how-to
+
+1. **Qué es**: nombre del componente/feature y propósito en una frase.
+2. **Uso básico**: ejemplo mínimo (import, props esenciales, resultado).
+3. **Props/API**: lista breve de props o opciones relevantes y qué hacen.
+4. **Casos de uso**: 1–2 ejemplos concretos (ej. “solo lectura”, “con validación”).
+5. **Notas**: limitaciones, dependencias o convenciones del proyecto que apliquen.
+
+## Ejemplo de estructura
+
+```markdown
+# How-to: RawTable
+
+## Qué es
+Tabla sin estilo para datos tabulares; el consumidor aplica estilos.
+
+## Uso básico
+\`\`\`tsx
+import { RawTable } from '@/components/RawTable';
+<RawTable data-ris-ui="raw-table" className="min-w-full">...</RawTable>
+\`\`\`
+
+## Props principales
+- \`className\`, \`style\`: estilado desde fuera.
+- \`ref\`: apunta al contenedor raíz.
+
+## Casos de uso
+- Listado de filas con cabecera.
+- Tabla con ordenación externa (el estado vive fuera).
+```
+
+## Checklist al crear componente/feature
+
+- [ ] Código del componente o feature creado.
+- [ ] Archivo how-to en `ldocs/` creado o actualizado con los puntos anteriores.
