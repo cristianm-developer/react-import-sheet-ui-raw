@@ -1,51 +1,60 @@
 ---
-description: Crear how-to (ldocs) al generar un componente o feature, documentando su uso
+description: Crear how-to (ldocs) al generar un hook, wrapper o feature; prioridad en documentar hooks
 alwaysApply: true
 ---
 
-# How-to y ldocs al crear componentes o features
+# How-to y ldocs al crear hooks, wrappers o features
 
-Cada vez que se **cree un componente nuevo** o una **feature nueva**, se debe crear también un **how-to** en formato doc (ldocs) que explique los detalles de uso.
+Cada vez que se **cree un hook nuevo** (useRaw*), un **wrapper** (componente Raw*) o una **feature nueva**, se debe crear o actualizar un **how-to** en formato doc (ldocs) que explique el uso. **Prioridad: documentar hooks**, ya que son la API principal.
 
 ## Dónde van los ldocs
 
 - Carpeta: **`ldocs/`** en la raíz del proyecto (o la que el proyecto defina).
-- Un doc por componente o feature. Nombre descriptivo, p. ej.:
-  - `ldocs/how-to-raw-table.md`
+- Un doc por hook, wrapper o feature. Nombre descriptivo, p. ej.:
+  - `ldocs/how-to-use-raw-cell.md`
+  - `ldocs/how-to-use-raw-file-picker.md`
+  - `ldocs/how-to-raw-table-cell.md` (wrapper opcional)
   - `ldocs/how-to-import-wizard.md`
 
 ## Contenido mínimo del how-to
 
-1. **Qué es**: nombre del componente/feature y propósito en una frase.
-2. **Uso básico**: ejemplo mínimo (import, props esenciales, resultado).
-3. **Props/API**: lista breve de props o opciones relevantes y qué hacen.
-4. **Casos de uso**: 1–2 ejemplos concretos (ej. “solo lectura”, “con validación”).
-5. **Notas**: limitaciones, dependencias o convenciones del proyecto que apliquen.
+### Para hooks (prioridad)
 
-## Ejemplo de estructura
+1. **Qué es**: nombre del hook y propósito (qué comportamiento define).
+2. **Uso básico**: ejemplo mínimo (import, parámetros, qué retorna: estado, acciones, prop-getters).
+3. **API**: getters (getCellProps, getRowProps, etc.), parámetros que aceptan, estado y acciones.
+4. **Casos de uso**: 1–2 ejemplos (ej. "aplicar getCellProps a un \<td\>", "solo lectura con editingEnabled").
+5. **Notas**: limitaciones, dependencias (headless, RawImporterRoot), convenciones.
+
+### Para wrappers o features
+
+- **Qué es**, **Uso básico**, **Props/API**, **Casos de uso**, **Notas** (igual que antes); aclarar que el wrapper solo usa el hook y expone render prop.
+
+## Ejemplo — how-to de hook
 
 ```markdown
-# How-to: RawTable
+# How-to: useRawCell
 
 ## Qué es
-Tabla sin estilo para datos tabulares; el consumidor aplica estilos.
+Hook que expone estado, acciones y prop-getters para una celda (lectura/edición, validación, data-pending, aria-invalid).
 
 ## Uso básico
 \`\`\`tsx
-import { RawTable } from '@/components/RawTable';
-<RawTable data-ris-ui="raw-table" className="min-w-full">...</RawTable>
+const { getCellProps, value, errors, getEditInputProps } = useRawCell(cellContext);
+return (
+  <td {...getCellProps({ className: 'tu-clase' })}>
+    {value}
+    {errors?.length ? <span {...getErrorProps()} /> : null}
+  </td>
+);
 \`\`\`
 
-## Props principales
-- \`className\`, \`style\`: estilado desde fuera.
-- \`ref\`: apunta al contenedor raíz.
-
-## Casos de uso
-- Listado de filas con cabecera.
-- Tabla con ordenación externa (el estado vive fuera).
+## API (getters y estado)
+- \`getCellProps({ className?, style? })\`, \`getEditInputProps()\`, \`getErrorProps()\`
+- \`value\`, \`errors\`, \`isPending\`, \`isEditing\`
 ```
 
-## Checklist al crear componente/feature
+## Checklist al crear hook/wrapper/feature
 
-- [ ] Código del componente o feature creado.
-- [ ] Archivo how-to en `ldocs/` creado o actualizado con los puntos anteriores.
+- [ ] Código del hook, wrapper o feature creado.
+- [ ] Archivo how-to en `ldocs/` creado o actualizado (hooks primero).

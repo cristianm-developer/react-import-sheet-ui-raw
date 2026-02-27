@@ -1,11 +1,11 @@
 ---
-description: Sincronización técnica con headless, Architecture, devlog y consistencia Raw (sin CSS)
+description: Sincronización técnica con headless, Architecture, devlog; núcleo hooks; consistencia Raw (sin CSS)
 alwaysApply: true
 ---
 
 # Regla de Sincronización Técnica — @cristianm/react-import-sheet-ui-raw
 
-Esta librería consume **@cristianm/react-import-sheet-headless**. El contrato técnico del headless está en: https://github.com/cristianm-developer/react-import-sheet-headless/blob/main/ai-context.md.
+Esta librería es **hooks-first headless**: el núcleo son **hooks** (useRaw*) que definen comportamientos; los componentes en `src/components/` son **wrappers opcionales**. Consume **@cristianm/react-import-sheet-headless**. Contrato del headless: https://github.com/cristianm-developer/react-import-sheet-headless/blob/main/ai-context.md.
 
 ---
 
@@ -23,33 +23,35 @@ Antes de sugerir **cualquier implementación** que use Hooks o Providers del hea
 
 ### Antes de cada tarea
 
-- **Lee** `@.cursor/Architecture.md` para entender el alcance del Step actual y la estructura del proyecto.
+- **Lee** `@.cursor/Architecture.md` para entender el alcance del Step actual, la prioridad **hooks** y la estructura del proyecto.
 
 ### Después de cada cambio significativo
 
 - **Actualiza** `@.cursor/devlog.md`: progreso diario / cronológico (qué se hizo, en qué archivos).
-- **Actualiza** `@.cursor/history.md`: decisiones de arquitectura (por qué se eligió un patrón de UI, ADRs).
+- **Actualiza** `@.cursor/history.md`: decisiones de arquitectura (por qué se eligió un patrón, ADRs).
 
 ### Cambios de feature o estructura
 
-- **Actualiza** `@.cursor/Architecture.md` cuando cambien features o la estructura (nuevos componentes, pasos, módulos). Mantén el esquema de Steps y el estado actual del proyecto al día.
+- **Actualiza** `@.cursor/Architecture.md` cuando cambien features o la estructura (nuevos hooks, wrappers, pasos). Mantén el esquema de Steps y el estado actual al día.
 
 ---
 
-## 3. Consistencia Raw (sin estilos)
+## 3. Consistencia Raw (sin estilos); hooks como núcleo
 
 - **No** añadir estilos: ni CSS ni inline styles ni clases visuales.
-- Si detectas un intento de añadir clases de presentación o estilos, **corrígelo** sugiriendo:
-  - **Prop-Getter**: el componente expone props (ej. `getCellProps`, `getRowProps`) que el consumidor usa para aplicar sus propias clases/estilos.
-  - **Slot**: render props o slots para que el consumidor inyecte su propio markup/estilos.
+- El **núcleo** de la lib son los **hooks** (estado, acciones, prop-getters). Los wrappers solo delegan en esos hooks.
+- Si detectas clases de presentación o estilos, **corrígelo** sugiriendo:
+  - **Prop-Getter**: el hook expone getters (ej. `getCellProps`, `getRowProps`) que el consumidor aplica a sus nodos con sus propias clases/estilos.
+  - **Slot**: en wrappers, render props para que el consumidor inyecte su propio markup/estilos.
 
 ---
 
-## 4. Publicación y consumo por otras librerías (Tailwind/CSS)
+## 4. Publicación y consumo — ai-context por hook
 
-Al **finalizar el desarrollo** de un componente Raw (ej. RawTable, RawErrorList):
+Al **finalizar el desarrollo** de un **hook** useRaw* (o de un wrapper Raw*):
 
 - **Actualiza** el archivo local **`ai-context.md`** (en esta librería de UI).
-- Ese archivo debe explicar a las **futuras librerías** (Tailwind, CSS, etc.) **cómo consumir los componentes Raw**: qué props/slots/getters exponen, cómo componerlos con el headless y cómo aplicar estilos desde fuera (Prop-Getters, Slots, estructura DOM esperada).
+- Documentar **por hook**: qué getters retorna, parámetros de los getters, estado y acciones. Así las **futuras librerías** (Tailwind, CSS, etc.) saben **cómo consumir solo con hooks**: qué aplicar a `<td>`, `<div>`, etc., y cómo componer con el headless.
+- Para wrappers: qué props/slots exponen y que solo delegan en el hook.
 
-Objetivo: que una lib de presentación (p. ej. con Tailwind) pueda usar esta UI raw sin tocar su código; solo leyendo `ai-context.md` de esta lib.
+Objetivo: que una lib de presentación pueda usar esta UI raw leyendo `ai-context.md` (hooks primero; wrappers opcionales).

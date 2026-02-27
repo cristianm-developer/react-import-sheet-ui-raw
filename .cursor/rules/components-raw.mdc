@@ -1,55 +1,54 @@
 ---
-description: Contrato de componentes Raw: ref al root, clase única, className y style obligatorios
-globs: "src/components/**/*.tsx"
+description: Hooks como núcleo (estado, acciones, prop-getters); wrappers opcionales con ref, clase única, className y style
+globs: "src/hooks/**/*.ts,src/components/**/*.tsx"
 alwaysApply: false
 ---
 
-# Componentes Raw — ref, clase única, className y style
+# Hooks primero; wrappers opcionales — contrato Raw
 
-Para **todo componente** creado en `src/components/`:
+La librería es **hooks-first headless**. El producto principal son **hooks** que definen comportamientos (estado, acciones, prop-getters); los "componentes" en `src/components/` son **wrappers opcionales** que solo llaman al hook y exponen el resultado (p. ej. por render prop).
 
-## 1. Ref al elemento raíz
+## 1. Hooks (núcleo) — `src/hooks/`
 
-- Exponer un **ref** (object ref) al **div (o elemento) principal** del componente.
-- Permite al consumidor estilizar o medir ese elemento desde fuera (Tailwind, CSS, medición).
+- Cada hook **useRaw\*** devuelve:
+  - **Estado**: valor, errores, flags (isPending, isEditing, etc.).
+  - **Acciones**: handlers que mapean eventos a Workers/Core (onChange, editCell, abort, etc.).
+  - **Contrato DOM**: **prop-getters** (`getCellProps`, `getRowProps`, `getRootProps`, `getInputProps`, etc.) que fusionan `className`/`style` y atributos de a11y/data (`role`, `aria-*`, `data-*`).
+- No exponer markup ni estilos; solo la configuración que el consumidor aplica a sus nodos (`<td>`, `<div>`, etc.).
+- Documentar en `ai-context.md` los getters, parámetros y retorno por hook.
+
+## 2. Wrappers opcionales — `src/components/`
+
+Si se crea un wrapper (RawFilePicker, RawTableCell, RawDataTable, etc.):
+
+- **Solo** llama al hook correspondiente y pasa el resultado al consumidor (p. ej. `children(state)` render prop).
+- No define markup obligatorio; el consumidor decide el cuerpo (td, div, input custom).
+
+Para todo wrapper en `src/components/`:
+
+### Ref al elemento raíz
+
+- Exponer **ref** (forwardRef) al elemento principal para que el consumidor estilice o mida desde fuera.
+
+### Clase o data-attribute única
+
+- Elemento raíz con identificador único: p. ej. **`data-ris-ui="raw-table"`** o **`ris-ui-raw--RawTable`**. Una sola convención en el proyecto.
+
+### Props mínimas: className y style
+
+- **`className?: string`** y **`style?: React.CSSProperties`** en la interfaz del wrapper (o extender `React.ComponentPropsWithoutRef<'div'>` y añadir las propias).
 
 ```tsx
-// ✅ El componente acepta ref y lo asigna al contenedor raíz
-export const RawTable = forwardRef<HTMLDivElement, RawTableProps>(
-  function RawTable({ className, style, ...props }, ref) {
-    return (
-      <div ref={ref} className={className} style={style} data-ris-ui="raw-table">
-        {/* ... */}
-      </div>
-    );
-  }
-);
-```
-
-## 2. Clase única y precisa
-
-- El elemento raíz (y subelementos si aplica) debe tener una **clase** o **data-attribute** **única y precisa** para que el consumidor pueda seleccionarla sin colisiones.
-- Convención: prefijo del paquete + nombre del componente, p. ej. **`data-ris-ui="raw-table"`** o clase **`ris-ui-raw--RawTable`**. Usar una sola convención en todo el proyecto.
-
-## 3. Props mínimas: className y style
-
-- **Siempre** recibir como mínimo:
-  - **`className?: string`** — para que el consumidor añada clases (Tailwind, BEM, etc.).
-  - **`style?: React.CSSProperties`** — para estilos inline si hace falta.
-- Extender de un tipo que incluya estas props (o `React.ComponentPropsWithoutRef<'div'>`) y añadir las propias.
-
-```tsx
-export interface RawTableProps {
-  className?: string;
-  style?: React.CSSProperties;
-  // ... resto de props del componente
-}
+// Wrapper: solo entrega el hook al usuario
+export const RawTableCell = ({ cell, children }) => {
+  const cellLogic = useRawCell(cell);
+  return children(cellLogic);
+};
 ```
 
 ## Resumen
 
-| Requisito | Aplicación |
-|-----------|------------|
-| Ref | forwardRef; asignar ref al div/elemento principal |
-| Identificación | Clase o data-attribute única (ej. `data-ris-ui="raw-table"` o `ris-ui-raw--RawTable`) |
-| Props mínimas | `className` y `style` en todos los componentes Raw |
+| Ámbito | Requisito |
+|--------|-----------|
+| **Hooks** | Estado + acciones + prop-getters; sin CSS ni markup; doc en ai-context |
+| **Wrappers** | Ref al raíz, data-attribute/clase única, className y style; render prop con resultado del hook |

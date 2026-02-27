@@ -1,26 +1,26 @@
 ---
-description: Al finalizar un componente, ejecutar sus tests y comprobar que pasen
-globs: "src/components/**/*.tsx"
+description: Al finalizar un hook o un componente (wrapper), ejecutar sus tests y comprobar que pasen
+globs: "src/hooks/**/*.ts,src/components/**/*.tsx"
 alwaysApply: false
 ---
 
-# Ejecutar tests al finalizar un componente
+# Ejecutar tests al finalizar un hook o componente
 
-Al **terminar de crear o modificar** un componente (y sus tests), hay que **ejecutar los tests que le corresponden** y comprobar que **todos pasen**.
+Al **terminar de crear o modificar** un **hook** (useRaw*) o un **componente wrapper** (y sus tests), hay que **ejecutar los tests que le corresponden** y comprobar que **todos pasen**.
 
 ## Qué hacer
 
-1. **Ejecutar** los tests del componente (archivo `*.test.ts` / `*.test.tsx` en la misma carpeta o suite relacionada).
+1. **Ejecutar** los tests del hook o componente (archivo `*.test.ts` / `*.test.tsx` en la misma carpeta o suite relacionada).
 2. **Revisar** la salida: que no haya fallos ni timeouts.
-3. **Corregir** cualquier test rojo o assertion fallida antes de dar por cerrado el trabajo en el componente.
+3. **Corregir** cualquier test rojo o assertion fallida antes de dar por cerrado el trabajo.
 
 ## Cómo ejecutarlos
 
-- **Solo ese archivo**: `npm run test -- --run path/to/ComponentName.test.tsx` (o el path del test).
+- **Solo ese archivo**: `npm run test -- --run path/to/useRawCell.test.ts` (o el path del test).
 - **Suite completa**: `npm run test -- --run` para asegurarse de no romper nada más.
 
 ## Checklist
 
-- [ ] Tests del componente ejecutados (`npm run test` o filtro por archivo).
+- [ ] Tests del hook o componente ejecutados (`npm run test` o filtro por archivo).
 - [ ] Todos los tests relevantes en verde (aprobados).
 - [ ] Si algo falla: corregir código o test hasta que pasen.

@@ -1,10 +1,10 @@
 ---
-description: TypeScript raw (sin CSS), sin comentarios innecesarios, tests unitarios colocados junto a cada archivo
+description: TypeScript raw (sin CSS), sin comentarios innecesarios, tests unitarios junto a cada archivo; prioridad en hooks
 globs: "**/*.ts,**/*.tsx"
 alwaysApply: false
 ---
 
-# TypeScript: raw, mínimo comentarios, tests al lado
+# TypeScript: raw, mínimo comentarios, tests al lado (hooks primero)
 
 ## Comentarios
 
@@ -26,20 +26,24 @@ if (res.status !== 204) body = await res.json();
 - Este código es **solo raw**: lógica, tipos, utilidades, API. No incluir estilos, CSS, ni referencias a clases/estilos.
 - Si hace falta UI, limitarse a estructura y datos; los estilos quedan fuera de alcance de esta regla.
 
-## Tests unitarios
+## Tests unitarios (hooks primero)
 
-- Por cada archivo **nuevo** que crees (`.ts` o `.tsx`), crea un test unitario **en la misma carpeta**, al lado del archivo.
-- Nombre del test: `nombreDelArchivo.test.ts` o `nombreDelArchivo.test.tsx` (por ejemplo `parser.ts` → `parser.test.ts`).
-- Los tests deben ser reales (assertions, casos límite), no placeholders.
+- **Prioridad:** Los **hooks** (`src/hooks/`) son el núcleo de la lib; cada hook debe tener test en la **misma carpeta**: `useRawXxx.ts` → `useRawXxx.test.ts`.
+- Por cada archivo **nuevo** (hook, utilidad, o wrapper): test **en la misma carpeta**, al lado del archivo.
+- Nombre: `nombreDelArchivo.test.ts` o `nombreDelArchivo.test.tsx` (ej. `useRawCell.ts` → `useRawCell.test.ts`, `RawTableCell.tsx` → `RawTableCell.test.tsx`).
+- Los tests deben ser reales (assertions, casos límite, interacciones), no placeholders.
 
 ```text
 src/
-  utils/
-    parser.ts
-    parser.test.ts
-  api/
-    client.ts
-    client.test.ts
+  hooks/
+    useRawCell.ts
+    useRawCell.test.ts
+    useRawFilePicker.ts
+    useRawFilePicker.test.ts
+  components/
+    RawTableCell/
+      RawTableCell.tsx
+      RawTableCell.test.tsx
 ```
 
 ## Resumen
@@ -48,4 +52,4 @@ src/
 |-------|------------|
 | Comentarios | Solo cuando den contexto importante para la IA |
 | CSS/estilos | No usar; proyecto raw |
-| Tests | Uno por archivo nuevo, mismo directorio, `*.test.ts` / `*.test.tsx` |
+| Tests | Hooks: test obligatorio junto al archivo; resto: un test por archivo nuevo, mismo directorio, `*.test.ts` / `*.test.tsx` |

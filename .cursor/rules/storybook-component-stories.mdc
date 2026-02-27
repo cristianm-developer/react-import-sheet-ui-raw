@@ -1,51 +1,74 @@
 ---
-description: Al crear un componente, crear su story de Storybook como ejemplo de uso y apariencia
-globs: "src/components/**/*.tsx"
+description: Al crear un hook o un componente wrapper, crear story que documente uso (hooks vía demo; wrappers opcionales)
+globs: "src/hooks/**/*.ts,src/components/**/*.tsx"
 alwaysApply: false
 ---
 
-# Storybook: story por componente
+# Storybook: documentar uso de hooks y wrappers
 
-Al crear un **nuevo componente** (o un componente que aún no tiene story), hay que crear su **story de Storybook** en paralelo.
+La API principal son **hooks**; los wrappers son opcionales. Las stories sirven para mostrar **cómo se usan** y qué se obtiene (estado, getters, acciones).
 
 ## Objetivo
 
-- Servir de **ejemplo visual** de cómo se ve el componente.
-- Servir de **ejemplo de uso** (props, children, contexto) para quien lo consuma.
+- **Hooks:** Servir de **ejemplo de uso** del hook (qué retorna, cómo se aplican los prop-getters). Si hace falta un “cuerpo” visual, usar un componente de demo mínimo que consuma el hook.
+- **Wrappers:** Servir de ejemplo visual y de uso (props, children/render prop, contexto).
 
 ## Dónde y cómo
 
-- **Ubicación**: junto al componente o en `stories/` / `src/stories/`. Si el proyecto coloca stories junto al componente: `ComponentName/ComponentName.stories.tsx`.
+- **Ubicación**: junto al hook o al componente, o en `stories/` / `src/stories/`. Ej.: `useRawCell/useRawCell.stories.tsx`, `RawTableCell/RawTableCell.stories.tsx`.
 - **Contenido mínimo**:
-  - Una story **Default** que muestre el componente en un estado representativo.
-  - Props documentadas o controlables con controls cuando aporte valor (ej. variantes, texto, disabled).
-  - Si el componente depende de contexto (provider, headless), montar el provider en la story o documentar cómo usarlo.
+  - **Hook:** Una story que muestre el uso del hook (p. ej. componente demo que llama `useRawCell` y pinta un `<td>` con `getCellProps`). Documentar getters, estado y acciones en la descripción o en controls.
+  - **Wrapper:** Una story **Default** en estado representativo; props documentadas o controlables cuando aporte valor. Si depende de contexto (RawImporterRoot, headless), montar el provider en la story o documentar cómo usarlo.
 
-## Ejemplo (CSF3)
+## Ejemplo — story de hook (demo mínimo)
 
 ```tsx
-// RawButton.stories.tsx
+// useRawCell.stories.tsx — demo que usa el hook
 import type { Meta, StoryObj } from '@storybook/react';
-import { RawButton } from './RawButton';
+import { useRawCell } from './useRawCell';
 
-const meta: Meta<typeof RawButton> = {
-  component: RawButton,
+function DemoCell() {
+  const cell = useRawCell(mockCellContext);
+  return (
+    <td {...cell.getCellProps({ className: 'border p-2' })}>
+      {cell.value}
+    </td>
+  );
+}
+
+const meta: Meta<typeof DemoCell> = {
+  component: DemoCell,
+  tags: ['autodocs'],
+};
+export default meta;
+export const Default: StoryObj<typeof DemoCell> = {};
+```
+
+## Ejemplo — story de wrapper (CSF3)
+
+```tsx
+// RawTableCell.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { RawTableCell } from './RawTableCell';
+
+const meta: Meta<typeof RawTableCell> = {
+  component: RawTableCell,
   tags: ['autodocs'],
 };
 export default meta;
 
-type Story = StoryObj<typeof RawButton>;
+type Story = StoryObj<typeof RawTableCell>;
 
 export const Default: Story = {
   args: {
-    label: 'Importar',
-    disabled: false,
+    cell: mockCell,
+    children: (state) => <td {...state.getCellProps()}>{state.value}</td>,
   },
 };
 ```
 
 ## Checklist
 
-- [ ] Existe un archivo `*.stories.tsx` (o `*.stories.ts`) para el componente.
-- [ ] La story muestra un ejemplo real de uso y apariencia.
+- [ ] Para **hooks**: existe story (o doc) que muestra uso del hook (getters, estado).
+- [ ] Para **wrappers**: existe `*.stories.tsx` con ejemplo de uso y apariencia.
 - [ ] `npm run storybook` muestra la story correctamente.
