@@ -1,13 +1,22 @@
 # Guía de consumo — @cristianm/react-import-sheet-ui-raw
 
-**Propósito:** Referencia para integradores (IA o desarrolladores) y para **librerías de presentación** (Tailwind, CSS, etc.) que quieran consumir los componentes Raw de esta librería. Usar solo la API pública descrita aquí.
+**Propósito:** Referencia para integradores (IA o desarrolladores) y para **librerías de presentación** (Tailwind, CSS, etc.) que consuman esta librería. Usar solo la API pública descrita aquí.
 
 ---
 
-## Cómo usar esta UI Raw
+## Qué es esta lib: Hooks-First Headless
 
-1. Esta librería depende de **@cristianm/react-import-sheet-headless**. Configura primero el **ImporterProvider** y el pipeline según el [ai-context del headless](https://github.com/cristianm-developer/react-import-sheet-headless/blob/main/ai-context.md).
-2. Los componentes de esta lib son **sin estilos**: exponen **Prop-Getters** y/o **Slots** para que el consumidor aplique sus propias clases y estilos.
+Esta librería es **lógica, no componentes**. El producto principal son **hooks** (`useRawCell`, `useRawFilePicker`, etc.) que devuelven **estado**, **acciones** y **prop-getters** (contrato DOM: `role`, `aria-*`, `data-*`). Con esos hooks el consumidor (o una futura lib de UI) configura sus propios nodos — `<td>`, `<div>`, grid custom, TanStack Virtual, etc. — sin conflictos de estilos ni markup impuesto.
+
+Opcionalmente se exponen **wrappers** (RawTableCell, RawFilePicker, …) que solo llaman al hook y pasan el resultado por render prop; son conveniencia, no obligatorios.
+
+---
+
+## Cómo usar esta lib
+
+1. Esta librería depende de **@cristianm/react-import-sheet-headless**. Configura primero el **ImporterProvider** (vía **RawImporterRoot** con `layout`) según el [ai-context del headless](https://github.com/cristianm-developer/react-import-sheet-headless/blob/main/ai-context.md).
+2. **Forma principal:** Usar **hooks** (`useRawCell`, `useRawFilePicker`, …). Cada hook devuelve getters y estado; el consumidor aplica los getters a sus nodos y aplica sus propias clases/estilos.
+3. **Forma opcional:** Usar los **wrappers** (RawTableCell, RawProgressMonitor, etc.) cuando convenga; siguen siendo sin estilos y exponen render props.
 
 ### Contrato con el headless (telemetría y persistencia)
 
@@ -16,44 +25,40 @@
 
 ---
 
-## Componentes Raw
+## Hooks (API principal)
 
-_(Actualizar al finalizar cada componente: nombre, props, getters, slots, estructura DOM esperada y ejemplo de uso con estilos externos.)_
+_(Actualizar al finalizar cada hook: nombre, retorno (estado, acciones, getters), y ejemplo de uso.)_
 
-### Ejemplo de ficha por componente
+### Ejemplo de ficha por hook
 
 ```markdown
-### RawTable
-- **Props:** ...
-- **Prop-Getters:** getTableProps(), getRowProps(row), getCellProps(cell), ...
-- **Slots:** header?, body?, cell?
-- **Consumo con Tailwind:** ...
+### useRawCell(cellContext)
+
+- **Retorno:** value, errors, isPending, isEditing, getCellProps(options?), getEditInputProps(), getErrorProps()
+- **Contrato DOM:** getCellProps aplica role="gridcell", aria-invalid, data-pending; acepta className, style
+- **Ejemplo:** const state = useRawCell(cell); return <td {...state.getCellProps({ className: "..." })}>...</td>;
 ```
 
 ---
 
-## Índice de componentes
+## Índice: hooks y wrappers opcionales
 
-| Componente | Descripción | Estado |
-|------------|-------------|--------|
-| **RawProgressMonitor** | Monitoreo de progreso (EventTarget); slot/ref para barra; phase actual. | Step 4 |
-| **RawAbortController** | Botón Cancelar que llama a `abort()` del Core. | Step 4 |
+| Hook / Wrapper                          | Descripción                                                                  | Estado |
+| --------------------------------------- | ---------------------------------------------------------------------------- | ------ |
+| **useRawProgress** / RawProgressMonitor | Progreso vía EventTarget; ref/valor para barra sin re-renders; phase actual. | Step 4 |
+| **useRawAbort** / RawAbortController    | Acción `abort()` del Core; wrapper: botón que la invoca.                     | Step 4 |
 
 ---
 
-### RawProgressMonitor
+### useRawProgress / RawProgressMonitor (wrapper opcional)
 
-- **Props:** `className?`, `style?`, `children?` (render prop), `onProgress?` (callback).
-- **Render prop:** `children({ phase, progressRef, aborted })` — `phase` (string), `progressRef` (ref actualizado en cada evento, sin re-renders), `aborted` (boolean tras `importer-aborted`).
-- **onProgress:** opcional; se invoca en cada evento `importer-progress` con el `ImporterProgressDetail`; el consumidor puede hacer setState para pintar la barra.
-- **Contrato Raw:** ref al contenedor raíz (`div`), `data-ris-ui="raw-progress-monitor"`.
-- **Uso:** Dentro de `ImporterProvider`; típicamente en el slot `renderProcess` de RawStatusGuard. No re-renderiza con cada %; usar `progressRef.current` o `onProgress` para la barra.
+- **Hook useRawProgress:** retorna `{ phase, progressRef, aborted, onProgress? }` — `progressRef` actualizado en cada evento sin re-renders; ideal para barra de progreso.
+- **Wrapper RawProgressMonitor:** usa el hook y expone render prop `children({ phase, progressRef, aborted })`; props `className?`, `style?`, `onProgress?`.
+- **Contrato:** ref al contenedor raíz (`div`), `data-ris-ui="raw-progress-monitor"`.
+- **Uso:** Dentro de RawImporterRoot; típicamente en el slot `renderProcess` de RawStatusGuard. No re-renderiza con cada %; usar `progressRef.current` o `onProgress` para la barra.
 
 ```tsx
-<RawProgressMonitor
-  onProgress={(d) => setPercent(d.globalPercent ?? 0)}
-  className="my-progress"
->
+<RawProgressMonitor onProgress={(d) => setPercent(d.globalPercent ?? 0)} className="my-progress">
   {({ phase, progressRef, aborted }) => (
     <>
       <span>{phase || 'Processing...'}</span>
@@ -68,12 +73,12 @@ _(Actualizar al finalizar cada componente: nombre, props, getters, slots, estruc
 
 ---
 
-### RawAbortController
+### useRawAbort / RawAbortController (wrapper opcional)
 
-- **Props:** `className?`, `style?`, `children?` (contenido del botón), `disabled?`, `aria-label?`.
-- **Comportamiento:** al hacer click llama a `abort()` de `useImporter()` (termina Workers y dispara `importer-aborted`).
-- **Contrato Raw:** ref al `<button>`, `data-ris-ui="raw-abort-controller"`, `type="button"`.
-- **Uso:** Dentro de `ImporterProvider`; típicamente junto a RawProgressMonitor en la vista de Proceso.
+- **Hook useRawAbort:** retorna `{ abort, getButtonProps(options?) }` — `abort()` llama al Core; getter aplica onClick y contrato al botón.
+- **Wrapper RawAbortController:** usa el hook; props `className?`, `style?`, `children?`, `disabled?`, `aria-label?`. Al click invoca `abort()`.
+- **Contrato:** ref al `<button>`, `data-ris-ui="raw-abort-controller"`, `type="button"`.
+- **Uso:** Dentro de RawImporterRoot; típicamente junto a RawProgressMonitor en la vista de Proceso.
 
 ```tsx
 <RawAbortController className="btn-cancel" aria-label="Cancel import">
@@ -83,4 +88,4 @@ _(Actualizar al finalizar cada componente: nombre, props, getters, slots, estruc
 
 ---
 
-Cuando se añada o cambie un componente Raw, actualizar este archivo para que las librerías de Tailwind/CSS sepan cómo consumirlo.
+Cuando se añada o cambie un **hook** o un wrapper, actualizar este archivo (getters, estado, acciones) para que integradores y libs de UI sepan consumir la lib vía hooks.

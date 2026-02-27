@@ -1,62 +1,85 @@
 # Architecture — @cristianm/react-import-sheet-ui-raw
 
-Esquema de pasos y estado actual del proyecto. La librería se divide en **componentes atómicos/estructurales** (Raw, sin CSS) y un **orquestador** "llave en mano". Actualizar cuando cambien features o la estructura.
+Esquema de pasos y estado actual del proyecto. La librería es **hooks-first headless**: el producto principal son **hooks y getters** que traducen el Core a estado, acciones y contrato DOM; los "componentes" son opcionales y solo exponen esa lógica. Actualizar cuando cambien features o la estructura.
 
 ---
 
-## Visión: Headless (cerebro) + UI Raw (nervios y músculos)
+## Visión: Hooks-First Headless (lib de lógica, no de componentes)
 
 - **Engine:** `@cristianm/react-import-sheet-headless` — lógica (Parser → Convert → Sanitizer → Validator → Transform).
-- **Esta lib:** solo estructura HTML correcta, eventos conectados al Core y **prop-getters** para que el consumidor aplique Tailwind/CSS.
+- **Esta lib:** **solo lógica** — hooks que sincronizan estado del Core, mapean eventos a Workers y entregan **prop-getters** (contrato DOM: `role`, `aria-*`, `data-*`). Cero CSS; cero conflictos de estilos. Pensada para **extender después** a una capa UI (o para que el consumidor construya su propia UI con los hooks).
 
-**Entrada de configuración:** El usuario pasa el **layout objetivo** (SheetLayout) como parámetro — típicamente a **RawImporterRoot** — para definir el esquema de columnas/campos al que se mapean los datos del archivo. Opcionalmente también `engine`, `persist`, `persistKey`.
+**Entrada de configuración:** El usuario pasa el **layout objetivo** (SheetLayout) — típicamente a **RawImporterRoot** (provider) — para definir el esquema de columnas/campos al que se mapean los datos. Opcionalmente `engine`, `persist`, `persistKey`.
 
 ---
 
-## Dos categorías de componentes
+## Los 3 pilares: qué entregan los hooks
 
-### 1. Componentes Atómicos / Estructurales (Librería "Raw")
+Los hooks de esta lib actúan como **traductor** del Core al DOM: convierten estados complejos y Workers en algo que cualquier componente o markup puede consumir.
 
-Sin CSS. Objetivo: estructura HTML correcta y conexión de eventos con el Core.
+| Pilar        | Responsabilidad del hook/getter                                        | Ejemplo de lo que inyecta                                                                    |
+| ------------ | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| **Estado**   | Sincronizar valor y errores con el Core.                               | `value`, `errors`, `isPending`, `isEditing`.                                                 |
+| **Acciones** | Mapear eventos del usuario a hilos/Workers.                            | `onDoubleClick`, `onChange`, `onKeyDown`, `editCell`, `abort`.                               |
+| **Contrato** | Asegurar que el navegador entienda qué es cada cosa (a11y, semántica). | `role="gridcell"`, `aria-invalid`, `data-pending`, getters que fusionan `className`/`style`. |
 
-| Fase | Componente | Responsabilidad breve |
-|------|------------|------------------------|
-| **Entrada (Upload & Mapping)** | **RawFilePicker** | Drag-and-drop + input file; expone `isDragging`. |
-| | **RawMappingTable** | Tabla para asociar columnas detectadas (Parser) con campos del SheetLayout. |
-| | **RawMappingRow** | Fila: Header Original → Selector campo destino → Estado (Válido/Maltrecho). |
-| | **RawMappingSuggest** | Expone **porcentaje de coincidencia** cuando el Core detecta columna "similar" a un campo (fuzzy); badge/sugerencia (ej: "E-mail" 90% con "email"). Param para **desactivar fuzziness**. |
-| | **RawImportAction** | Botón que ejecuta `processFile`; `disabled` si el mapeo es incompleto. |
-| **Feedback (Progress & Status)** | **RawProgressDisplay** | Alto rendimiento: suscripción a EventTarget `importer-progress`, actualiza vía ref (sin re-renders). |
-| | **RawStatusIndicator** | Estado actual (parsing, validating, success, error); en **error** expone **objeto de diagnóstico** (no solo texto) para mensajes como "Sin memoria". |
-| | **RawAbortButton** | Botón que llama a `abort()` del core (detener Workers). |
-| **Datos (Grid & Edit)** | **RawDataTable** | Contenedor principal; gestiona **Roaming Tabindex** (navegación con flechas). Edición activable/desactivable por param. |
-| | **RawTableHead** | Cabeceras definidas en el Layout. |
-| | **RawTableBody** | Cuerpo: **getRowProps** con **isRowLoading/isPlaceholder** para fila skeleton; virtualización por el consumidor. |
-| | **RawTableRow** | Fila; **getRowProps({ index, style })** + **onKeyDown** inyectado para A11y; expone `row.errors`. |
-| | **RawTableCell** | Lectura/Edición; **render prop** `(state) => ...` para input/datepicker/checkbox custom; optimistic update, `data-pending`, `aria-invalid`. |
-| | **RawErrorBadge** | Slot para SheetError.code + función de traducción (I18n) del usuario. |
-| **Errores / Telemetría** | **RawErrorBoundary** | Captura errores fatales (ej. Worker murió por falta de memoria); opcional telemetría vía **useImporter().metrics** (o wrapper useImporterMetrics()) para resumen (ej. "10.000 filas en 1,2s"). |
-| **Navegación y Salida** | **RawPagination** | Siguiente/Anterior vinculados a `setPage`. |
-| | **RawFilterToggle** | Switch entre `filterMode: 'all'` y `'errors-only'`. |
-| | **RawExportButton** | Dispara `downloadCSV` o `downloadJSON`. |
-| | **RawPersistenceBanner** | Recuperar/Limpiar sesión (cuando hay sesión recuperable). La acción "Limpiar" en la UI se documenta como **clearSession**; en el headless el método exportado es **clearPersistedState()** — la lib puede exponer un alias `clearSession` que llame a `clearPersistedState()`. |
+**Huella técnica:** No vendemos el "cuerpo" (el `<td>` o el `<div>`); vendemos el **sistema nervioso** (el objeto de configuración que hace que esos elementos funcionen con importación masiva y validación en Workers).
 
-### 2. Orquestador (Implementación "Todo construido")
+---
 
-Un solo componente de alto nivel que el usuario "rápido" puede usar arrastrando y soltando.
+## Categorías: Hooks (núcleo) y Wrappers opcionales
 
-| Componente | Descripción |
-|------------|-------------|
-| **RawImporterWorkflow** | Gestiona la **máquina de estados** de la UI. Compone todos los Raw y decide qué mostrar en cada estado. |
+### 1. Hooks y getters (núcleo de la lib)
 
-**Estados y qué muestra RawImporterWorkflow:**
+La API principal son **hooks** que devuelven estado, acciones y prop-getters. El consumidor (o una futura lib de UI) usa estos hooks para configurar sus propios componentes — `<td>`, `<div>`, TanStack Virtual, Framer Motion, etc.
 
-| Estado | Muestra |
-|--------|---------|
-| **IDLE** | RawFilePicker. |
-| **MAPPING** | RawMappingTable (usuario asocia CSV ↔ Layout). |
-| **PROCESSING** | RawProgressDisplay + RawAbortButton. |
-| **RESULT** | Toolbar (RawFilterToggle + RawExportButton) + Grid (RawDataTable con edición) + Footer (RawPagination + RawPersistenceBanner). |
+| Fase                             | Hook / getter                                  | Responsabilidad breve                                                                                                          |
+| -------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------- |
+| **Entrada (Upload & Mapping)**   | **useRawFilePicker**                           | `isDragging`, getRootProps, getInputProps; conexión con `processFile`.                                                         |
+|                                  | **useRawMappingTable** / **useRawMappingRow**  | Estado de mapeo CSV ↔ Layout; getters por fila (header original, selector destino, válido/maltrecho).                          |
+|                                  | **useRawMappingSuggest**                       | Porcentaje de coincidencia fuzzy (matchScore, suggestedFieldId); param para desactivar fuzziness.                              |
+|                                  | **useRawImportAction**                         | `disabled` si mapeo incompleto; acción que ejecuta `processFile`.                                                              |
+| **Feedback (Progress & Status)** | **useRawProgress**                             | Suscripción a EventTarget `importer-progress`; ref/valor para barra sin re-renders.                                            |
+|                                  | **useRawStatus**                               | Estado actual (parsing, validating, success, error); en error **objeto de diagnóstico** (no solo texto).                       |
+|                                  | **useRawAbort**                                | Acción `abort()` del Core (detener Workers).                                                                                   |
+| **Datos (Grid & Edit)**          | **useRawDataTable**                            | Roaming tabindex, getRowProps; edición activable por param.                                                                    |
+|                                  | **useRawTableHead**                            | Cabeceras del Layout.                                                                                                          |
+|                                  | **useRawTableBody**                            | getRowProps({ index, style }), isRowLoading/isPlaceholder para skeleton; compatible con virtualización externa.                |
+|                                  | **useRawTableRow**                             | getRowProps, onKeyDown inyectado (a11y), `row.errors`.                                                                         |
+|                                  | **useRawCell**                                 | Lectura/edición: value, errors, isPending, getCellProps, getEditInputProps, optimistic update, `data-pending`, `aria-invalid`. |
+|                                  | **useRawErrorBadge**                           | SheetError.code + slot para traducción (I18n).                                                                                 |
+| **Errores / Telemetría**         | **useRawErrorBoundary** (o lógica equivalente) | Captura errores fatales; opcional telemetría vía **useImporter().metrics**.                                                    |
+| **Navegación y Salida**          | **useRawPagination**                           | Siguiente/Anterior vinculados a `setPage`.                                                                                     |
+|                                  | **useRawFilterToggle**                         | filterMode: 'all'                                                                                                              | 'errors-only'. |
+|                                  | **useRawExport**                               | Dispara `downloadCSV` / `downloadJSON`.                                                                                        |
+|                                  | **useRawPersistence**                          | Recuperar/Limpiar sesión (recoverSession, clearSession → clearPersistedState).                                                 |
+
+### 2. Wrappers opcionales (conveniencia)
+
+Si se exponen "componentes" (RawTableCell, RawDataTable, etc.), son **contenedores mínimos** que solo llaman al hook y pasan el resultado por **render prop**; no definen markup obligatorio. El usuario elige si ese "cerebro" va a un `<td>`, a un `<div>` de un grid o a un canvas.
+
+Ejemplo de anatomía:
+
+```ts
+// Lo que hace un "componente" Raw: solo entrega el hook al usuario
+export const RawTableCell = ({ cell, children }) => {
+  const cellLogic = useRawCell(cell);
+  return children(cellLogic); // el usuario decide el cuerpo (td, div, etc.)
+};
+```
+
+Lista de wrappers opcionales (alineados con la tabla de hooks): RawFilePicker, RawMappingTable, RawMappingRow, RawMappingSuggest, RawImportAction, RawProgressDisplay, RawStatusIndicator, RawAbortButton, RawDataTable, RawTableHead, RawTableBody, RawTableRow, RawTableCell, RawErrorBadge, RawPagination, RawFilterToggle, RawExportButton, RawPersistenceBanner, RawErrorBoundary.
+
+### 3. Orquestador (opcional, "todo construido")
+
+**RawImporterWorkflow** gestiona la **máquina de estados** y compone hooks (o sus wrappers) para cada pantalla. Pensado para el usuario que quiere una experiencia llave en mano sin montar cada hook a mano.
+
+| Estado         | Muestra (hooks o wrappers)                                                                                        |
+| -------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **IDLE**       | useRawFilePicker / RawFilePicker.                                                                                 |
+| **MAPPING**    | useRawMappingTable, useRawMappingRow, useRawMappingSuggest / RawMappingTable, etc.                                |
+| **PROCESSING** | useRawProgress, useRawAbort / RawProgressDisplay, RawAbortButton.                                                 |
+| **RESULT**     | useRawFilterToggle, useRawExport, useRawDataTable, useRawPagination, useRawPersistence / Toolbar + Grid + Footer. |
 
 ---
 
@@ -77,58 +100,54 @@ Ejemplo mínimo:
 
 ---
 
-## Uso avanzado: hooks expuestos y funciones nativas
+## Consumo: hooks primero; wrappers y orquestador opcionales
 
-El usuario puede **prescindir de componentes Raw** y usar la lógica del Core por su cuenta. La librería debe **exponer (o reexportar) hooks** del headless para que pueda:
+La forma principal de uso es **RawImporterRoot + hooks**. El usuario (o una futura lib de UI) usa los hooks para configurar sus propios nodos; los wrappers (RawFilePicker, RawTableCell, etc.) y RawImporterWorkflow son opcionales.
 
-1. **No usar RawFilePicker**: importar el archivo por su cuenta (input nativo, otra lib, drag externo) y **pasarlo a la librería** llamando p. ej. a `processFile(file)` (o el método que exponga el headless). Sigue usando RawMappingTable / RawImportAction / etc. si quiere, o solo el flujo de datos.
-2. **Construir su propia tabla**: usar **useSheetData()**, **getRows()**, **useSheetEditor()** (editCell) desde los hooks expuestos y renderizar su propio grid/table sin RawDataTable, RawTableRow, RawTableCell.
-3. **Montar solo el provider y su UI**: usar **RawImporterRoot** con `layout` y, en lugar de RawImporterWorkflow o RawStatusGuard, leer **useImporterStatus()**, **useConvert()**, etc. y decidir qué pantalla mostrar y con qué componentes (propios o Raw).
+1. **UI 100 % propia:** RawImporterRoot con `layout` + `useRawFilePicker`, `useRawCell`, `useSheetData`, `useSheetEditor`, `processFile`, `abort`, etc. Sin ningún componente Raw; el consumidor pinta `<td>`, `<div>`, lo que quiera.
+2. **Híbrido:** Usar algunos hooks (p. ej. `useRawCell`) y algunos wrappers (p. ej. RawMappingTable) según convenga.
+3. **Llave en mano:** RawImporterRoot + RawImporterWorkflow; el Workflow usa internamente los hooks (o sus wrappers) y la máquina de estados.
 
-**Contrato:** La lib reexporta o reexpone desde el headless los hooks y métodos necesarios (p. ej. `useImporterStatus`, `useConvert`, `useSheetData`, `useSheetEditor`, `processFile`, `abort`, `downloadCSV`, `downloadJSON`), de modo que el usuario pueda usar **solo** RawImporterRoot + esos hooks y construir toda la UI a mano. Los componentes Raw son **opcionales** y de conveniencia.
+**Contrato:** La lib reexporta los hooks del headless que hagan falta (`useImporterStatus`, `useConvert`, `useSheetData`, `useSheetEditor`, `processFile`, `abort`, `downloadCSV`, `downloadJSON`) y expone los **useRaw\*** como API principal. Los wrappers tipo RawTableCell son **opcionales** y de conveniencia; quien quiera control total usa solo hooks.
 
 ---
 
-## Estrategia Prop-Getters (Raw)
+## Estrategia Prop-Getters (hooks)
 
-Para que la lib sea fácil de estilizar con Tailwind o CSS, cada componente Raw sigue el patrón **prop-getters**: la librería entrega getters que el desarrollador aplica a sus nodos.
+Los hooks devuelven **prop-getters** que el consumidor aplica a sus nodos; así la lib no impone CSS ni estructura. Cada hook (useRawCell, useRawFilePicker, etc.) documenta los getters que retorna y las props que aceptan (p. ej. `className`, `style`).
 
-Ejemplo (API interna de una celda Raw):
+Ejemplo (consumo directo del hook, sin wrapper):
 
 ```ts
-const { getCellProps, getErrorProps } = useRawCell(cellContext);
+const { getCellProps, getErrorProps, value, errors } = useRawCell(cellContext);
 
 return (
   <td {...getCellProps({ className: "tu-clase-tailwind" })}>
-    {cell.value}
-    {cell.errors && <span {...getErrorProps()} />}
+    {value}
+    {errors?.length ? <span {...getErrorProps()} /> : null}
   </td>
 );
 ```
 
-Cada componente Raw debe documentar en `ai-context.md` sus getters (p. ej. `getRootProps`, `getInputProps`, `getCellProps`, `getErrorProps`) y las props que aceptan (p. ej. `className`, `style`).
+En `ai-context.md` se documentan los getters por hook (`getRootProps`, `getInputProps`, `getCellProps`, `getErrorProps`, etc.) y sus parámetros.
 
 ---
 
-## Política de Slots y Render Props
+## Render props en wrappers opcionales
 
-Cuando el HTML por defecto no basta (p. ej. el usuario quiere un datepicker, checkbox o input custom en una celda), los componentes atómicos aceptan **children como función** (render prop).
+Cuando existan wrappers (p. ej. RawTableCell), aceptan **children como función** `(state) => ReactNode` para que el consumidor decida el markup (datepicker, checkbox, input custom). El wrapper solo llama al hook y pasa el resultado; no impone HTML.
 
-**Regla:** Los componentes Raw que renderizan contenido variable (celda, fila de mapeo, etc.) pueden aceptar **children: (state) => ReactNode**. El Raw pasa un objeto **state** con getters, flags y datos; el consumidor devuelve lo que quiera (input nativo, componente custom, etc.).
-
-**Ejemplo RawTableCell:**
+**Ejemplo con wrapper RawTableCell:**
 
 ```tsx
-<RawTableCell>
+<RawTableCell cell={cell}>
   {(state) =>
-    state.isEditing
-      ? <MyCustomInput {...state.getEditInputProps()} />
-      : <span>{state.value}</span>
+    state.isEditing ? <MyCustomInput {...state.getEditInputProps()} /> : <span>{state.value}</span>
   }
 </RawTableCell>
 ```
 
-`state` incluye al menos: `isEditing`, `value`, `getEditInputProps()`, `errors`, `pending`. Otros componentes (RawMappingRow, RawErrorBadge, etc.) siguen el mismo patrón donde tenga sentido. Si no se pasa children, el Raw usa un render por defecto (input nativo en celda, etc.).
+Quien use **solo el hook** no necesita render prop: tiene `useRawCell(cell)` y con eso pinta lo que quiera. El objeto que devuelve el hook (state) incluye al menos: `isEditing`, `value`, `getEditInputProps()`, `getCellProps()`, `errors`, `isPending`.
 
 ---
 
@@ -217,34 +236,38 @@ La Raw no integra spinners ni librerías; solo atributos estándar (`data-pendin
 
 ## Flujo de negocio en la UI (resumen)
 
-| Paso | Componente Raw | Hook del Core |
-|------|----------------|---------------|
-| 1. Carga | RawFilePicker | `processFile` (registro de archivo) |
-| 2. Mapeo | RawMappingTable / RawMappingRow | `useConvert` |
-| 3. Proceso | RawProgressDisplay | `useImporterStatus` + EventTarget |
-| 4. Revisión | RawDataTable | `useSheetData` |
-| 5. Corrección | RawTableCell | `useSheetEditor` (`editCell`) |
-| 6. Finalizar | RawExportButton | `useSheetView` / downloadCSV, downloadJSON |
+| Paso          | Hook de esta lib                      | Hook / API del Core                        |
+| ------------- | ------------------------------------- | ------------------------------------------ |
+| 1. Carga      | useRawFilePicker                      | `processFile` (registro de archivo)        |
+| 2. Mapeo      | useRawMappingTable / useRawMappingRow | `useConvert`                               |
+| 3. Proceso    | useRawProgress / useRawStatus         | `useImporterStatus` + EventTarget          |
+| 4. Revisión   | useRawDataTable                       | `useSheetData`                             |
+| 5. Corrección | useRawCell                            | `useSheetEditor` (`editCell`)              |
+| 6. Finalizar  | useRawExport                          | `useSheetView` / downloadCSV, downloadJSON |
+
+(Wrappers RawFilePicker, RawTableCell, etc. son opcionales y solo delegan en estos hooks.)
 
 ---
 
 ## Estructura de archivos y Public API (index.ts selectivo)
 
-Todo el código que se publica como librería vive bajo **`src/`**. El **`index.ts`** de la raíz debe ser **extremadamente selectivo**: solo lo que el consumidor necesita.
+Todo el código que se publica como librería vive bajo **`src/`**. El **`index.ts`** prioriza **hooks** como API principal; wrappers y orquestador son opcionales.
 
-**Exportar únicamente:**
+**Exportar (en este orden de importancia):**
 
-1. **Componentes Raw** (RawFilePicker, RawMappingTable, RawMappingRow, RawMappingSuggest, RawImportAction, RawProgressDisplay, RawStatusIndicator, RawAbortButton, RawDataTable, RawTableHead, RawTableBody, RawTableRow, RawTableCell, RawErrorBadge, RawPagination, RawFilterToggle, RawExportButton, RawPersistenceBanner, RawImporterWorkflow, RawErrorBoundary).
-2. **Prop-getters como hooks independientes** para uso avanzado: **useRawFilePicker**, **useRawTableCell**, etc. (los hooks que devuelven getRootProps, getCellProps, etc.), no los hooks **internos** usados para construir los componentes.
-3. **Tipos públicos** (SheetLayout, SheetError, ImporterStatus, tipos de state de render props, etc.).
+1. **Hooks useRaw\*** — useRawFilePicker, useRawMappingTable, useRawMappingRow, useRawMappingSuggest, useRawImportAction, useRawProgress, useRawStatus, useRawAbort, useRawDataTable, useRawTableHead, useRawTableBody, useRawTableRow, useRawCell, useRawErrorBadge, useRawPagination, useRawFilterToggle, useRawExport, useRawPersistence, etc. (cada uno devuelve estado, acciones y prop-getters).
+2. **Reexport de hooks del headless** — useImporterStatus, useConvert, useSheetData, useSheetEditor, processFile, abort, downloadCSV, downloadJSON, etc., para consumo sin wrappers.
+3. **RawImporterRoot** (provider con layout) y, opcionalmente, **wrappers** (RawFilePicker, RawTableCell, …) y **RawImporterWorkflow** (orquestador).
+4. **Tipos públicos** (SheetLayout, SheetError, ImporterStatus, tipos de retorno de los hooks, etc.).
 
-**No exportar:** Hooks internos que solo sirven para implementar los Raw (p. ej. lógica interna de RawTableBody). El consumidor que quiera control total usa los hooks del headless reexportados (useImporterStatus, useSheetData, etc.), no los internos de la lib.
+**No exportar:** Hooks internos que solo implementan los wrappers. El consumidor que quiera control total usa los useRaw\* y los hooks del headless reexportados.
 
-| Ruta | Contenido |
-|------|------------|
-| **`src/`** | Código que se compila como lib (tsup/build). |
-| **`src/shared/`** | Tipos públicos, reexport de hooks del headless, utilidades. Hooks internos en módulos no reexportados desde index. |
-| **`src/components/`** | Componentes Raw atómicos y orquestador (uno por carpeta). |
+| Ruta                  | Contenido                                                                                             |
+| --------------------- | ----------------------------------------------------------------------------------------------------- |
+| **`src/`**            | Código que se compila como lib (tsup/build).                                                          |
+| **`src/shared/`**     | Tipos públicos, reexport de hooks del headless, utilidades.                                           |
+| **`src/hooks/`**      | Hooks públicos **useRaw\*** (núcleo de la lib).                                                       |
+| **`src/components/`** | Wrappers opcionales (uno por carpeta) que usan los hooks y exponen render props; RawImporterWorkflow. |
 
 Ejemplo de estructura:
 
@@ -252,29 +275,19 @@ Ejemplo de estructura:
 src/
   shared/
     types/
-    hooks/          (reexport headless + hooks públicos useRaw*)
-  components/
+    (reexport headless)
+  hooks/
+    useRawFilePicker.ts
+    useRawCell.ts
+    useRawTableBody.ts
+    ...
+  components/        (opcionales; cada uno usa el hook correspondiente)
     RawFilePicker/
-    RawMappingTable/
-    RawMappingRow/
-    RawMappingSuggest/
-    RawImportAction/
-    RawProgressDisplay/
-    RawStatusIndicator/
-    RawAbortButton/
-    RawDataTable/
-    RawTableHead/
-    RawTableBody/
-    RawTableRow/
     RawTableCell/
-    RawErrorBadge/
-    RawPagination/
-    RawFilterToggle/
-    RawExportButton/
-    RawPersistenceBanner/
+    RawDataTable/
+    ...
     RawImporterWorkflow/
-    RawErrorBoundary/
-  index.ts          (solo componentes, useRaw*, tipos públicos)
+  index.ts           (hooks primero, luego provider, wrappers, tipos)
 ```
 
 ---
@@ -283,23 +296,23 @@ src/
 
 Plan de construcción por pasos. Ejecutar en orden. Cada step tiene su checklist en `Construction Steps/`.
 
-| Step | Archivo | Descripción |
-|------|---------|-------------|
-| **1** | [step-01-settings.md](Construction%20Steps/step-01-settings.md) | Settings: stack, dependencias, ESLint, Prettier, Vitest, Storybook, Husky, lint-staged, Commitlint |
-| **2** | [step-02-root-and-status-guard.md](Construction%20Steps/step-02-root-and-status-guard.md) | RawImporterRoot (layout, **fuzzyMatch**, **stages**, **editingEnabled**), RawStatusGuard, hooks reexport, **Public API** (index selectivo) |
-| **3** | [step-03-input-phase-components.md](Construction%20Steps/step-03-input-phase-components.md) | Entrada: RawFilePicker, RawMappingTable, RawMappingRow, **RawMappingSuggest** (fuzzy + param off), RawImportAction |
+| Step  | Archivo                                                                                           | Descripción                                                                                                                                                                                             |
+| ----- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1** | [step-01-settings.md](Construction%20Steps/step-01-settings.md)                                   | Settings: stack, dependencias, ESLint, Prettier, Vitest, Storybook, Husky, lint-staged, Commitlint                                                                                                      |
+| **2** | [step-02-root-and-status-guard.md](Construction%20Steps/step-02-root-and-status-guard.md)         | RawImporterRoot (layout, **fuzzyMatch**, **stages**, **editingEnabled**), RawStatusGuard, hooks reexport, **Public API** (index selectivo)                                                              |
+| **3** | [step-03-input-phase-components.md](Construction%20Steps/step-03-input-phase-components.md)       | Entrada: RawFilePicker, RawMappingTable, RawMappingRow, **RawMappingSuggest** (fuzzy + param off), RawImportAction                                                                                      |
 | **4** | [step-04-feedback-phase-components.md](Construction%20Steps/step-04-feedback-phase-components.md) | Feedback: RawProgressDisplay, RawStatusIndicator (**errorDetail** alineado con headless), RawAbortButton; **RawErrorBoundary**; telemetría vía **useImporter().metrics** o wrapper useImporterMetrics() |
-| **5** | [step-05-core-visual-data-table.md](Construction%20Steps/step-05-core-visual-data-table.md) | Datos: RawDataTable (**A11y** Roaming Tabindex, **editingEnabled**), RawTableBody (**isPlaceholder**), RawTableRow (onKeyDown), RawTableCell (**render prop**), RawErrorBadge |
-| **6** | [step-06-view-phase-components.md](Construction%20Steps/step-06-view-phase-components.md) | Salida: RawPagination, RawFilterToggle, RawExportButton, RawPersistenceBanner |
-| **7** | [step-07-orchestrator-workflow.md](Construction%20Steps/step-07-orchestrator-workflow.md) | Orquestador: RawImporterWorkflow (máquina de estados + composición de todos los Raw) |
+| **5** | [step-05-core-visual-data-table.md](Construction%20Steps/step-05-core-visual-data-table.md)       | Datos: RawDataTable (**A11y** Roaming Tabindex, **editingEnabled**), RawTableBody (**isPlaceholder**), RawTableRow (onKeyDown), RawTableCell (**render prop**), RawErrorBadge                           |
+| **6** | [step-06-view-phase-components.md](Construction%20Steps/step-06-view-phase-components.md)         | Salida: RawPagination, RawFilterToggle, RawExportButton, RawPersistenceBanner                                                                                                                           |
+| **7** | [step-07-orchestrator-workflow.md](Construction%20Steps/step-07-orchestrator-workflow.md)         | Orquestador: RawImporterWorkflow (máquina de estados + composición de todos los Raw)                                                                                                                    |
 
 ---
 
 ## Estado actual
 
-- **Step en curso:** según avance (Step 4 completado en componentes anteriores; nombres alineados con Gemini en esta arquitectura).
-- **Componentes Raw:** seguir la tabla de "Componentes Atómicos" más arriba; el orquestador **RawImporterWorkflow** se implementa en Step 7.
-- **Documentación:** `ai-context.md` (en raíz) se actualiza al finalizar cada componente para que librerías Tailwind/CSS sepan consumirlos vía prop-getters. La lib mantiene **compatibilidad estándar** (data-*, aria-*) y **no integra** librerías de virtualización ni de UI; el consumidor las añade si las necesita.
+- **Step en curso:** según avance (Step 4 completado en componentes anteriores; nombres alineados con esta arquitectura).
+- **Prioridad:** Implementar y documentar los **hooks useRaw\*** como núcleo; los wrappers (RawFilePicker, RawTableCell, etc.) son capa opcional que usa esos hooks. El orquestador **RawImporterWorkflow** se implementa en Step 7 y compone hooks (o wrappers).
+- **Documentación:** `ai-context.md` se actualiza por **hook** (getters, estado, acciones) para que integradores y futuras libs de UI sepan consumir la lib solo con hooks. La lib mantiene **contrato estándar** (data-_, aria-_) y **no integra** virtualización ni UI; el consumidor aplica estilos e integraciones.
 
 ---
 
