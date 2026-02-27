@@ -30,7 +30,7 @@ export interface RawProgressMonitorProps {
 
 const RawProgressMonitorInner = (
   props: RawProgressMonitorProps,
-  ref: React.ForwardedRef<HTMLDivElement>,
+  ref: React.ForwardedRef<HTMLDivElement>
 ) => {
   const { className, style, children, onProgress } = props;
 
@@ -61,26 +61,17 @@ const RawProgressMonitorInner = (
     };
   }, [progressEventTarget, onProgress]);
 
-  const content =
-    typeof children === 'function'
-      ? children({ phase, progressRef, aborted })
-      : null;
+  const content = typeof children === 'function' ? children({ phase, progressRef, aborted }) : null;
 
   return (
-    <div
-      ref={ref}
-      className={className}
-      style={style}
-      data-ris-ui="raw-progress-monitor"
-    >
+    <div ref={ref} className={className} style={style} data-ris-ui="raw-progress-monitor">
       {content}
     </div>
   );
 };
 
-export const RawProgressMonitor = forwardRef<
-  HTMLDivElement,
-  RawProgressMonitorProps
->(RawProgressMonitorInner);
+export const RawProgressMonitor = forwardRef<HTMLDivElement, RawProgressMonitorProps>(
+  RawProgressMonitorInner
+);
 
 RawProgressMonitor.displayName = 'RawProgressMonitor';

@@ -1,0 +1,7 @@
+node_modules/
+dist/
+coverage/
+storybook-static/
+.storybook-static/
+*.min.js
+package-lock.json

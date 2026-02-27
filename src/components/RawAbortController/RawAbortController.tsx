@@ -16,15 +16,9 @@ export interface RawAbortControllerProps {
 
 const RawAbortControllerInner = (
   props: RawAbortControllerProps,
-  ref: React.ForwardedRef<HTMLButtonElement>,
+  ref: React.ForwardedRef<HTMLButtonElement>
 ) => {
-  const {
-    className,
-    style,
-    children,
-    disabled = false,
-    'aria-label': ariaLabel,
-  } = props;
+  const { className, style, children, disabled = false, 'aria-label': ariaLabel } = props;
 
   const { abort } = useImporter();
 
@@ -44,9 +38,8 @@ const RawAbortControllerInner = (
   );
 };
 
-export const RawAbortController = forwardRef<
-  HTMLButtonElement,
-  RawAbortControllerProps
->(RawAbortControllerInner);
+export const RawAbortController = forwardRef<HTMLButtonElement, RawAbortControllerProps>(
+  RawAbortControllerInner
+);
 
 RawAbortController.displayName = 'RawAbortController';
