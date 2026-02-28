@@ -17,3 +17,5 @@ export type {
   GetRowPropsOptions,
   GetCellPropsOptions,
 } from './data-phase.js';
+
+export type { FilterMode } from './view-phase.js';

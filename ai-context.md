@@ -43,25 +43,30 @@ _(Actualizar al finalizar cada hook: nombre, retorno (estado, acciones, getters)
 
 ## Índice: hooks y wrappers opcionales
 
-| Hook / Wrapper                               | Descripción                                                                    | Estado |
-| -------------------------------------------- | ------------------------------------------------------------------------------ | ------ |
-| **useRawImporterRoot** / RawImporterRoot     | providerProps + rootConfig; monta ImporterProvider + RootConfigProvider.       | Step 2 |
-| **useStatusView** / RawStatusGuard           | Vista actual (idle \| mapping \| process \| result \| error) + datos headless. | Step 2 |
-| **useRawFilePicker** / RawFilePicker         | isDragging, getRootProps, getInputProps; conexión con processFile.             | Step 3 |
-| **useRawMappingTable** / RawMappingTable     | Filas de mapeo (useConvert); datos por fila para useRawMappingRow.             | Step 3 |
-| **useRawMappingRow** / RawMappingRow         | Por fila: headerOriginal, options, value, onChange, mappingStatus.             | Step 3 |
-| **useRawMappingSuggest** / RawMappingSuggest | matchScore (0–100), suggestedFieldId/Label; solo si fuzzyMatch.                | Step 3 |
-| **useRawImportAction** / RawImportAction     | disabled (mapeo incompleto), runImport (applyMapping).                         | Step 3 |
-| **useRawProgress** / RawProgressDisplay      | Progreso vía EventTarget; progressRef (sin re-renders); opcional onProgress.   | Step 4 |
-| **useRawStatus** / RawStatusIndicator        | status + errorDetail (objeto diagnóstico en error).                            | Step 4 |
-| **useRawAbort** / RawAbortButton             | Acción `abort()` del Core; wrapper: botón que la invoca.                       | Step 4 |
-| **RawErrorBoundary**                         | Error Boundary; fallback y onError opcional.                                   | Step 4 |
-| **useRawDataTable** / RawDataTableProvider   | Roaming Tabindex, editingEnabled; contexto para tabla.                         | Step 5 |
-| **useRawTableHead**                          | Cabeceras (headers) desde SheetLayout.                                         | Step 5 |
-| **useRawTableBody**                          | getRowProps({ index, style }), totalRowCount, isPlaceholder.                   | Step 5 |
-| **useRawTableRow**                           | getRowProps, row.errors.                                                       | Step 5 |
-| **useRawCell**                               | value, getCellProps, getEditInputProps, getErrorProps, editCell; data-pending. | Step 5 |
-| **useRawErrorBadge**                         | error (SheetError) + message/translateError para I18n.                         | Step 5 |
+| Hook / Wrapper                               | Descripción                                                                      | Estado |
+| -------------------------------------------- | -------------------------------------------------------------------------------- | ------ |
+| **useRawImporterRoot** / RawImporterRoot     | providerProps + rootConfig; monta ImporterProvider + RootConfigProvider.         | Step 2 |
+| **useStatusView** / RawStatusGuard           | Vista actual (idle \| mapping \| process \| result \| error) + datos headless.   | Step 2 |
+| **useRawFilePicker** / RawFilePicker         | isDragging, getRootProps, getInputProps; conexión con processFile.               | Step 3 |
+| **useRawMappingTable** / RawMappingTable     | Filas de mapeo (useConvert); datos por fila para useRawMappingRow.               | Step 3 |
+| **useRawMappingRow** / RawMappingRow         | Por fila: headerOriginal, options, value, onChange, mappingStatus.               | Step 3 |
+| **useRawMappingSuggest** / RawMappingSuggest | matchScore (0–100), suggestedFieldId/Label; solo si fuzzyMatch.                  | Step 3 |
+| **useRawImportAction** / RawImportAction     | disabled (mapeo incompleto), runImport (applyMapping).                           | Step 3 |
+| **useRawProgress** / RawProgressDisplay      | Progreso vía EventTarget; progressRef (sin re-renders); opcional onProgress.     | Step 4 |
+| **useRawStatus** / RawStatusIndicator        | status + errorDetail (objeto diagnóstico en error).                              | Step 4 |
+| **useRawAbort** / RawAbortButton             | Acción `abort()` del Core; wrapper: botón que la invoca.                         | Step 4 |
+| **RawErrorBoundary**                         | Error Boundary; fallback y onError opcional.                                     | Step 4 |
+| **useRawDataTable** / RawDataTableProvider   | Roaming Tabindex, editingEnabled; contexto para tabla.                           | Step 5 |
+| **useRawTableHead**                          | Cabeceras (headers) desde SheetLayout.                                           | Step 5 |
+| **useRawTableBody**                          | getRowProps({ index, style }), totalRowCount, isPlaceholder.                     | Step 5 |
+| **useRawTableRow**                           | getRowProps, row.errors.                                                         | Step 5 |
+| **useRawCell**                               | value, getCellProps, getEditInputProps, getErrorProps, editCell; data-pending.   | Step 5 |
+| **useRawErrorBadge**                         | error (SheetError) + message/translateError para I18n.                           | Step 5 |
+| **RawViewPhaseProvider**                     | Contexto único para paginación, filtro, export y persistencia (vista RESULT).    | Step 6 |
+| **useRawPagination**                         | page, pageSize, totalRows, setPage, setPageSize.                                 | Step 6 |
+| **useRawFilterToggle**                       | filterMode ('all' \| 'errors-only'), setFilterMode.                              | Step 6 |
+| **useRawExport**                             | downloadCSV, downloadJSON (acciones del Core).                                   | Step 6 |
+| **useRawPersistence**                        | hasRecoverableSession, recoverSession, clearSession (alias clearPersistedState). | Step 6 |
 
 ---
 
@@ -336,6 +341,38 @@ Usar dentro de **RawImporterRoot** (o ImporterProvider + RootConfigProvider + La
 - **Opciones:** `{ error: SheetError | null, translateError?(code, params) => string }`.
 - **Retorno:** **error** (code, params), **message** (traducido si hay translateError; si no, error.message o code), **translateError** (opcional, para slot custom).
 - **Uso:** Slot para mostrar un error de celda/fila con I18n. Sin UI obligatoria; el consumidor pinta el mensaje.
+
+---
+
+## Hooks fase Vista (Step 6 — Navegación y salida)
+
+Estos hooks deben usarse **dentro de RawViewPhaseProvider** (y este dentro de ImporterProvider, típicamente cuando la vista es RESULT / success). **RawViewPhaseProvider** es la fuente única de verdad: llama a **useSheetView** del headless con estado local para **filterMode** y **pageSize**, y expone ese valor por contexto. Los wrappers RawPagination, RawFilterToggle, RawExportButton, RawPersistenceBanner son opcionales (solo llaman al hook y exponen render prop o slots).
+
+### RawViewPhaseProvider (obligatorio para los hooks de vista)
+
+- **Props:** `children`, `initialPage?` (default 1), `defaultPageSize?` (default 25), `defaultFilterMode?` ('all' | 'errors-only', default 'all').
+- **Comportamiento:** Mantiene estado para filterMode y pageSize; llama a **useSheetView** del headless con esas opciones; proporciona **ViewPhaseContext** con page, setPage, pageSize, setPageSize, totalRows, filterMode, setFilterMode, downloadCSV, downloadJSON, hasRecoverableSession, recoverSession, clearSession.
+- **Uso:** Envolver la vista RESULT (toolbar + grid + footer). Ejemplo: `<RawViewPhaseProvider defaultPageSize={25}><Toolbar /><Grid /><Footer /></RawViewPhaseProvider>`.
+
+### useRawPagination (hook principal)
+
+- **Retorno:** **page** (1-based), **pageSize**, **totalRows**, **setPage**, **setPageSize**. Sin UI; el consumidor pinta botones Anterior/Siguiente y selector de tamaño.
+- **Uso:** Dentro de RawViewPhaseProvider. Ejemplo: `setPage(page - 1)` en "Anterior", `setPageSize(Number(e.target.value))` en un `<select>`.
+
+### useRawFilterToggle (hook principal)
+
+- **Retorno:** **filterMode** (`'all' | 'errors-only'`), **setFilterMode**. Valores alineados con el headless.
+- **Uso:** Dentro de RawViewPhaseProvider. "Ver todos" → `setFilterMode('all')`; "Solo errores" → `setFilterMode('errors-only')`.
+
+### useRawExport (hook principal)
+
+- **Retorno:** **downloadCSV**, **downloadJSON** (funciones del Core; aceptan opciones `{ filename? }`). El consumidor asocia a botones.
+- **Uso:** Dentro de RawViewPhaseProvider. "Descargar CSV" → `downloadCSV({ filename: 'export' })`; "Descargar JSON" → `downloadJSON({ filename: 'export' })`.
+
+### useRawPersistence (hook principal)
+
+- **Retorno:** **hasRecoverableSession** (boolean), **recoverSession** (función), **clearSession** (función; alias de clearPersistedState del headless). Si **hasRecoverableSession** es false, el consumidor no muestra banner.
+- **Uso:** Dentro de RawViewPhaseProvider. "Recuperar" → `recoverSession()`; "Limpiar" → `clearSession()`. Visible solo si `hasRecoverableSession === true`.
 
 ---
 

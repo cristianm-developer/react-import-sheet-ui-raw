@@ -1,0 +1,63 @@
+---
+description: Contexto de la app y sincronización de docs, README y técnico (headless, Raw, ai-context)
+alwaysApply: true
+---
+
+# Contexto y sincronización — @cristianm/react-import-sheet-ui-raw
+
+Regla única que agrupa: **obtener contexto** antes de codear, **mantener al día** la documentación `.cursor`, el **README** y la **coherencia técnica** con el headless y la lib Raw.
+
+---
+
+## 1. Contexto obligatorio (archivos a consultar)
+
+Para **cada creación o modificación de código**, usar estos archivos en `.cursor/` como fuente de verdad:
+
+| Archivo | Para qué |
+|--------|----------|
+| **`.cursor/Architecture.md`** | Visión hooks-first headless, pilares (estado, acciones, contrato), categorías de hooks, fases (Entrada, Feedback, Datos), estado actual del proyecto. |
+| **`.cursor/history.md`** | ADRs: decisiones de diseño y consecuencias. |
+| **`.cursor/devlog.md`** | Log cronológico: qué se tocó últimamente, bloqueos y próximos pasos. |
+
+- **Antes de codear:** leer (o revisar) estos archivos para que el código sea coherente con la arquitectura, las decisiones ya tomadas y el trabajo reciente.
+- **Después de cambios significativos:** actualizar los mismos archivos según la tabla de la sección 2.
+
+---
+
+## 2. Sincronizar documentación .cursor
+
+Cada vez que se **agregue código** o se **modifiquen features**, revisar si hay que actualizar:
+
+| Archivo | Cuándo | Qué incluir |
+|---------|--------|-------------|
+| **`.cursor/Architecture.md`** | Cambios de features, nueva estructura, nuevos hooks/wrappers o flujos. | Esquema de pasos, tablas de hooks/wrappers, diagramas, visión headless. |
+| **`.cursor/devlog.md`** | Después de cada cambio significativo (no cada typo). | Entrada: `### YYYY-MM-DD`, **Qué**, **Archivos**, **Notas** (opcional). |
+| **`.cursor/history.md`** | Decisiones de diseño o cambios técnicos relevantes. | ADR: título, fecha, estado, contexto, decisión, consecuencias. |
+
+**Checklist:** ¿Cambié features o estructura? → Architecture.md. ¿Cambio significativo? → devlog.md. ¿Decisión de diseño? → history.md. No cerrar sesión sin revisar si estos archivos requieren actualización.
+
+---
+
+## 3. Sincronizar README con features visibles
+
+Cuando añadas o modifiques **features visibles para quien usa el paquete**, actualizar el README si aplica. La lib es **hooks-first**: uso principal = **hooks** (useRaw*); wrappers opcionales.
+
+- **Nuevos hooks** (useRaw*) o reexports del headless → documentar en **Usage** (import y uso del hook).
+- Nuevos wrappers o APIs públicas → documentar en Usage (opcional, tras los hooks).
+- Nuevos scripts en `package.json` → fila en la tabla **Scripts**.
+- Cambios en instalación, dependencias o forma de uso → **Install** y **Usage**.
+
+Secciones del README a tocar: **Install**, **Usage** (hooks primero; luego wrappers si aplica), **Scripts**. No documentar refactors internos; solo lo que afecta uso, instalación o comandos.
+
+---
+
+## 4. Coherencia técnica (headless y Raw)
+
+- **Referencia externa:** Antes de implementar con Hooks/Providers del headless, consultar el [ai-context.md del headless](https://github.com/cristianm-developer/react-import-sheet-headless/blob/main/ai-context.md). Respetar pipeline (Parser → Convert → Sanitizer → Validator → Transform) y contratos (SheetLayout, SheetError, useSheetData, etc.).
+- **Núcleo hooks:** La lib es hooks-first; los componentes en `src/components/` son wrappers opcionales que delegan en hooks.
+- **Sin estilos:** No añadir CSS, inline styles ni clases visuales. Usar **prop-getters** (getCellProps, getRowProps, etc.) y en wrappers **slots/render props** para que el consumidor aplique sus clases/estilos.
+- **ai-context local:** Al finalizar un hook useRaw* o wrapper Raw*, actualizar el **`ai-context.md`** de esta lib: documentar por hook (getters, parámetros, estado, acciones) para que futuras libs de presentación sepan consumir solo con hooks.
+
+---
+
+**Resumen:** Contexto = `Architecture.md`, `history.md`, `devlog.md`. Sincronizar esos tres + README + ai-context según cambios; mantener coherencia con headless y estilo Raw (hooks, sin estilos).

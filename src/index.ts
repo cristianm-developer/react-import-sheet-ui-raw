@@ -87,6 +87,26 @@ export type {
   UseRawErrorBadgeReturn,
 } from './hooks/useRawErrorBadge/index';
 
+export {
+  useRawPagination,
+  ViewPhaseContext,
+  RawViewPhaseProvider,
+} from './hooks/useRawPagination/index';
+export type {
+  ViewPhaseContextValue,
+  RawViewPhaseProviderProps,
+  UseRawPaginationReturn,
+} from './hooks/useRawPagination/index';
+
+export { useRawFilterToggle } from './hooks/useRawFilterToggle/index';
+export type { UseRawFilterToggleReturn } from './hooks/useRawFilterToggle/index';
+
+export { useRawExport } from './hooks/useRawExport/index';
+export type { UseRawExportReturn } from './hooks/useRawExport/index';
+
+export { useRawPersistence } from './hooks/useRawPersistence/index';
+export type { UseRawPersistenceReturn } from './hooks/useRawPersistence/index';
+
 export { useImporterMetrics } from './hooks/useImporterMetrics/index';
 
 export type { StatusView } from './shared/types/status-views';
@@ -106,6 +126,7 @@ export type {
   GetRowPropsOptions,
   GetCellPropsOptions,
 } from './shared/types/data-phase';
+export type { FilterMode } from './shared/types/view-phase';
 
 export { RawImporterRoot } from './components/RawImporterRoot';
 export type { RawImporterRootProps } from './components/RawImporterRoot';
