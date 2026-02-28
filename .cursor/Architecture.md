@@ -310,7 +310,9 @@ Plan de construcción por pasos. Ejecutar en orden. Cada step tiene su checklist
 
 ## Estado actual
 
-- **Step en curso:** según avance. Los Construction Steps están alineados con arquitectura **hooks-first**: cada step (2–6) implementa **hooks** y prop-getters; wrappers son opcionales.
+- **Step completado:** **Step 3** (Input Phase). Implementados **useRawFilePicker** (getRootProps, getInputProps, isDragging, processFile), **useRawMappingTable**, **useRawMappingRow**, **useRawMappingSuggest** (matchScore, suggestedFieldId; fuzzyMatch), **useRawImportAction** (disabled, runImport). Tipos en `src/shared/types/input-phase.ts`; **LayoutContext**/LayoutProvider en Root para opciones de mapeo. Wrappers opcionales RawFilePicker, RawMappingTable, RawMappingRow, RawMappingSuggest, RawImportAction. Siguiente: Step 4 (feedback).
+- **Artefactos Step 2:** hooks **useRawImporterRoot**, **useStatusView**; tipos **StatusView**, **getViewFromState** en `src/shared/types/`; wrappers **RawImporterRoot**, **RawStatusGuard**.
+- **Artefactos Step 3:** hooks **useRawFilePicker**, **useRawMappingTable**, **useRawMappingRow**, **useRawMappingSuggest**, **useRawImportAction**; tipos **LayoutFieldOption**, **MappingStatus**, **RawMappingRowContext**, **RawMappingSuggestContext**, **getLayoutFieldOptions**; utilidad **getSimilarity** en `src/shared/utils/fuzzy-similarity.ts`; wrappers RawFilePicker, RawMappingTable, RawMappingRow, RawMappingSuggest, RawImportAction.
 - **Prioridad:** Implementar y documentar los **hooks useRaw\*** como núcleo (getRootProps, getInputProps, getCellProps, getRowProps, etc.); los wrappers (RawFilePicker, RawTableCell, etc.) son capa opcional que usa esos hooks. El orquestador **RawImporterWorkflow** (Step 7) compone hooks (o wrappers) por vista.
 - **Documentación:** `ai-context.md` se actualiza por **hook** (getters, estado, acciones) para que integradores y futuras libs de UI sepan consumir la lib solo con hooks. La lib mantiene **contrato estándar** (data-_, aria-_) y **no integra** virtualización ni UI; el consumidor aplica estilos e integraciones.
 
