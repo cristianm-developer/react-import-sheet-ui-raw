@@ -1,6 +1,6 @@
 ---
 description: TypeScript raw (sin CSS), sin comentarios innecesarios, tests unitarios junto a cada archivo; prioridad en hooks
-globs: "**/*.ts,**/*.tsx"
+globs: *.tsx,*.ts
 alwaysApply: false
 ---
 

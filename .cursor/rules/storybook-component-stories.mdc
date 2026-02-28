@@ -1,9 +1,7 @@
 ---
-description: Al crear un hook o un componente wrapper, crear story que documente uso (hooks vía demo; wrappers opcionales)
-globs: "src/hooks/**/*.ts,src/components/**/*.tsx"
+globs: *.tsx,*.ts
 alwaysApply: false
 ---
-
 # Storybook: documentar uso de hooks y wrappers
 
 La API principal son **hooks**; los wrappers son opcionales. Las stories sirven para mostrar **cómo se usan** y qué se obtiene (estado, getters, acciones).

@@ -1,8 +1,7 @@
 ---
-description: Contexto de la app y sincronización de docs, README y técnico (headless, Raw, ai-context)
-alwaysApply: true
+globs: *.tsx,*.ts
+alwaysApply: false
 ---
-
 # Contexto y sincronización — @cristianm/react-import-sheet-ui-raw
 
 Regla única que agrupa: **obtener contexto** antes de codear, **mantener al día** la documentación `.cursor`, el **README** y la **coherencia técnica** con el headless y la lib Raw.

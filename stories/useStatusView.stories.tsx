@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { ImporterProvider } from '@cristianm/react-import-sheet-headless';
-import { RootConfigProvider } from '../hooks/useRawImporterRoot';
-import { useRawImporterRoot } from '../hooks/useRawImporterRoot';
-import { useStatusView } from '../hooks/useStatusView';
+import { RootConfigProvider } from '../src/hooks/useRawImporterRoot';
+import { useRawImporterRoot } from '../src/hooks/useRawImporterRoot';
+import { useStatusView } from '../src/hooks/useStatusView';
 
 const layout = { name: 'Demo', version: '1', fields: { email: { name: 'Email' } } };
 

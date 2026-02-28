@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { ImporterProvider } from '@cristianm/react-import-sheet-headless';
-import { useRawStatus } from '../hooks/useRawStatus';
+import { useRawStatus } from '../src/hooks/useRawStatus';
 
 function StatusSlot() {
   const { status, errorDetail } = useRawStatus();

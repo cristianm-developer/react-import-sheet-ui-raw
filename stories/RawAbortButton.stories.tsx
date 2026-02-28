@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { ImporterProvider } from '@cristianm/react-import-sheet-headless';
-import { RawAbortButton } from '../components/RawAbortButton';
+import { RawAbortButton } from '../src/components/RawAbortButton';
 
 const meta: Meta<typeof RawAbortButton> = {
   title: 'Raw/RawAbortButton',

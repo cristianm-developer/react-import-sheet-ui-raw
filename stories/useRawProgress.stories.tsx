@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { ImporterProvider } from '@cristianm/react-import-sheet-headless';
-import { useRawProgress } from '../hooks/useRawProgress';
+import { useRawProgress } from '../src/hooks/useRawProgress';
 
 function ProgressSlot() {
   const { progressRef } = useRawProgress();

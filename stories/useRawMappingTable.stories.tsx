@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { RawImporterRoot } from '../components/RawImporterRoot';
-import { useRawMappingTable } from '../hooks/useRawMappingTable';
-import { useRawMappingRow } from '../hooks/useRawMappingRow';
-import { useStatusView } from '../hooks/useStatusView';
+import { RawImporterRoot } from '../src/components/RawImporterRoot';
+import { useRawMappingTable } from '../src/hooks/useRawMappingTable';
+import { useRawMappingRow } from '../src/hooks/useRawMappingRow';
+import { useStatusView } from '../src/hooks/useStatusView';
 
 const layout = {
   name: 'Demo',

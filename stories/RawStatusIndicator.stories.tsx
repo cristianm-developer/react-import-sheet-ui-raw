@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { ImporterProvider } from '@cristianm/react-import-sheet-headless';
-import { RawStatusIndicator } from '../components/RawStatusIndicator';
+import { RawStatusIndicator } from '../src/components/RawStatusIndicator';
 
 const meta: Meta<typeof RawStatusIndicator> = {
   title: 'Raw/RawStatusIndicator',

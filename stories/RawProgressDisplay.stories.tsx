@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 import { ImporterProvider } from '@cristianm/react-import-sheet-headless';
-import { RawProgressDisplay } from '../components/RawProgressDisplay';
+import { RawProgressDisplay } from '../src/components/RawProgressDisplay';
 
 const meta: Meta<typeof RawProgressDisplay> = {
   title: 'Raw/RawProgressDisplay',

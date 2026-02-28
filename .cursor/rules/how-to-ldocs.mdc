@@ -1,6 +1,7 @@
 ---
 description: Crear how-to (ldocs) al generar un hook, wrapper o feature; prioridad en documentar hooks
 alwaysApply: true
+globs: *.tsx,*.ts
 ---
 
 # How-to y ldocs al crear hooks, wrappers o features

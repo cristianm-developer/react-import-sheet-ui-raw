@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { RawImporterRoot } from '../components/RawImporterRoot';
-import { useRawFilePicker } from '../hooks/useRawFilePicker';
-import { useStatusView } from '../hooks/useStatusView';
+import { RawImporterRoot } from '../src/components/RawImporterRoot';
+import { useRawFilePicker } from '../src/hooks/useRawFilePicker';
+import { useStatusView } from '../src/hooks/useStatusView';
 
 const layout = {
   name: 'Demo',

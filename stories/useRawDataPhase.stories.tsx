@@ -7,7 +7,7 @@ import {
   useRawTableBody,
   RawDataTableProvider,
   useRawErrorBadge,
-} from '../index';
+} from '../src/index';
 
 const layout = {
   name: 'Demo',

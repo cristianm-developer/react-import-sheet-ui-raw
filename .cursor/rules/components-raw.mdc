@@ -1,9 +1,8 @@
 ---
 description: Hooks como núcleo (estado, acciones, prop-getters); wrappers opcionales con ref, clase única, className y style
-globs: "src/hooks/**/*.ts,src/components/**/*.tsx"
+globs: *.ts,*.tsx
 alwaysApply: false
 ---
-
 # Hooks primero; wrappers opcionales — contrato Raw
 
 La librería es **hooks-first headless**. El producto principal son **hooks** que definen comportamientos (estado, acciones, prop-getters); los "componentes" en `src/components/` son **wrappers opcionales** que solo llaman al hook y exponen el resultado (p. ej. por render prop).

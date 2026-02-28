@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { ImporterProvider } from '@cristianm/react-import-sheet-headless';
-import { useRawImporterRoot, RootConfigProvider } from '../hooks/useRawImporterRoot';
-import { useStatusView } from '../hooks/useStatusView';
+import { useRawImporterRoot, RootConfigProvider } from '../src/hooks/useRawImporterRoot';
+import { useStatusView } from '../src/hooks/useStatusView';
 
 const layout = {
   name: 'Demo',

@@ -1,9 +1,8 @@
 ---
 description: Al finalizar un hook o un componente (wrapper), ejecutar sus tests y comprobar que pasen
-globs: "src/hooks/**/*.ts,src/components/**/*.tsx"
+globs: *.ts,*.tsx
 alwaysApply: false
 ---
-
 # Ejecutar tests al finalizar un hook o componente
 
 Al **terminar de crear o modificar** un **hook** (useRaw*) o un **componente wrapper** (y sus tests), hay que **ejecutar los tests que le corresponden** y comprobar que **todos pasen**.

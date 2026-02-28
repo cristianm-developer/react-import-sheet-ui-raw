@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { RawImporterRoot } from '../components/RawImporterRoot';
-import { useRawImportAction } from '../hooks/useRawImportAction';
-import { useStatusView } from '../hooks/useStatusView';
+import { RawImporterRoot } from '../src/components/RawImporterRoot';
+import { useRawImportAction } from '../src/hooks/useRawImportAction';
+import { useStatusView } from '../src/hooks/useStatusView';
 
 const layout = {
   name: 'Demo',

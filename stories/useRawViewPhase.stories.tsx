@@ -6,7 +6,7 @@ import {
   useRawFilterToggle,
   useRawExport,
   useRawPersistence,
-} from '../index';
+} from '../src/index';
 
 const layout = {
   name: 'Demo',

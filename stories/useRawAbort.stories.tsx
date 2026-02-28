@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { ImporterProvider } from '@cristianm/react-import-sheet-headless';
-import { useRawAbort } from '../hooks/useRawAbort';
+import { useRawAbort } from '../src/hooks/useRawAbort';
 
 function AbortSlot() {
   const { abort } = useRawAbort();

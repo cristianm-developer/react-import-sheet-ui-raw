@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { RawErrorBoundary } from '../components/RawErrorBoundary';
+import { RawErrorBoundary } from '../src/components/RawErrorBoundary';
 
 function Thrower() {
   throw new Error('Simulated error');
