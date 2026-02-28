@@ -56,6 +56,37 @@ export type { UseRawStatusReturn } from './hooks/useRawStatus/index';
 export { useRawAbort } from './hooks/useRawAbort/index';
 export type { UseRawAbortReturn } from './hooks/useRawAbort/index';
 
+export {
+  useRawDataTable,
+  DataTableContext,
+  RawDataTableProvider,
+} from './hooks/useRawDataTable/index';
+export type {
+  DataTableContextValue,
+  UseRawDataTableReturn,
+  UseRawDataTableOptions,
+  RawDataTableProviderProps,
+  PendingCell,
+} from './hooks/useRawDataTable/index';
+
+export { useRawTableHead } from './hooks/useRawTableHead/index';
+export type { UseRawTableHeadReturn } from './hooks/useRawTableHead/index';
+
+export { useRawTableBody } from './hooks/useRawTableBody/index';
+export type { UseRawTableBodyReturn } from './hooks/useRawTableBody/index';
+
+export { useRawTableRow } from './hooks/useRawTableRow/index';
+export type { UseRawTableRowOptions, UseRawTableRowReturn } from './hooks/useRawTableRow/index';
+
+export { useRawCell } from './hooks/useRawCell/index';
+export type { UseRawCellOptions, UseRawCellReturn } from './hooks/useRawCell/index';
+
+export { useRawErrorBadge } from './hooks/useRawErrorBadge/index';
+export type {
+  UseRawErrorBadgeOptions,
+  UseRawErrorBadgeReturn,
+} from './hooks/useRawErrorBadge/index';
+
 export { useImporterMetrics } from './hooks/useImporterMetrics/index';
 
 export type { StatusView } from './shared/types/status-views';
@@ -67,6 +98,14 @@ export type {
   RawMappingSuggestContext,
 } from './shared/types/input-phase';
 export { getLayoutFieldOptions } from './shared/types/input-phase';
+export type {
+  TableHeader,
+  RawTableRowContext,
+  RawCellContext,
+  GetRowPropsResult,
+  GetRowPropsOptions,
+  GetCellPropsOptions,
+} from './shared/types/data-phase';
 
 export { RawImporterRoot } from './components/RawImporterRoot';
 export type { RawImporterRootProps } from './components/RawImporterRoot';

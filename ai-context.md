@@ -56,6 +56,12 @@ _(Actualizar al finalizar cada hook: nombre, retorno (estado, acciones, getters)
 | **useRawStatus** / RawStatusIndicator        | status + errorDetail (objeto diagnóstico en error).                            | Step 4 |
 | **useRawAbort** / RawAbortButton             | Acción `abort()` del Core; wrapper: botón que la invoca.                       | Step 4 |
 | **RawErrorBoundary**                         | Error Boundary; fallback y onError opcional.                                   | Step 4 |
+| **useRawDataTable** / RawDataTableProvider   | Roaming Tabindex, editingEnabled; contexto para tabla.                         | Step 5 |
+| **useRawTableHead**                          | Cabeceras (headers) desde SheetLayout.                                         | Step 5 |
+| **useRawTableBody**                          | getRowProps({ index, style }), totalRowCount, isPlaceholder.                   | Step 5 |
+| **useRawTableRow**                           | getRowProps, row.errors.                                                       | Step 5 |
+| **useRawCell**                               | value, getCellProps, getEditInputProps, getErrorProps, editCell; data-pending. | Step 5 |
+| **useRawErrorBadge**                         | error (SheetError) + message/translateError para I18n.                         | Step 5 |
 
 ---
 
@@ -280,6 +286,56 @@ if (status === 'error' && errorDetail) {
 - **Props:** `children`, **fallback** (ReactNode o `(error, errorInfo) => ReactNode`), **onError?(error, errorInfo)**.
 - **Comportamiento:** Error Boundary que captura errores fatales (Worker murió, error de React). No sustituye useRawStatus (errorDetail para errores de flujo).
 - **Contrato:** `data-ris-ui="raw-error-boundary"`.
+
+---
+
+## Hooks fase Datos (Step 5 — Grid y edición)
+
+Usar dentro de **RawImporterRoot** (o ImporterProvider + RootConfigProvider + LayoutProvider). Para la tabla de resultado (vista RESULT) se necesita **RawDataTableProvider** (o inyectar el valor de **useRawDataTable()** en **DataTableContext**) para que useRawTableRow/useRawCell tengan Roaming Tabindex y **editingEnabled**.
+
+### useRawDataTable (hook principal — contexto tabla)
+
+- **Opciones:** `onNavigateToIndex?(index)` — opcional; se invoca cuando el foco se mueve con flechas a una fila fuera de la ventana virtual (para que el consumidor haga scrollToIndex en su virtualizador).
+- **Retorno:** `editingEnabled`, `headerIds`, `totalRowCount`, `focusedRowIndex`, `focusedCellKey`, `setFocused`, `pendingCell`, `setPendingCell`, `getKeyDownHandler`, `onNavigateToIndex`, `headers` (array { id, label }).
+- **Uso:** Proporcionar contexto para la tabla (Roaming Tabindex, edición). El consumidor envuelve la tabla con **RawDataTableProvider** (que usa useRawDataTable por dentro) o hace `<DataTableContext.Provider value={useRawDataTable({ onNavigateToIndex })}>...</DataTableContext.Provider>`.
+
+### RawDataTableProvider (opcional)
+
+- **Props:** `children`, `onNavigateToIndex?(index)`.
+- **Comportamiento:** Llama a useRawDataTable y proporciona **DataTableContext**. Debe usarse dentro de ImporterProvider + LayoutProvider + RootConfigProvider (p. ej. dentro de RawImporterRoot).
+
+### useRawTableHead (hook principal)
+
+- **Retorno:** `{ headers }` — array de `{ id, label }` desde SheetLayout para renderizar `<thead>` y `<th>`.
+- **Uso:** Dentro de ImporterProvider (LayoutContext). No requiere DataTableContext.
+
+### useRawTableBody (hook principal)
+
+- **Retorno:** `totalRowCount`, **getRowProps({ index, style? })**, **isPlaceholder(index)**.
+- **getRowProps:** Devuelve props para `<tr>`: `key`, `data-row-index`, `data-has-errors`, `data-placeholder`, `style`, `role="row"`, `aria-rowindex`. El consumidor pasa `index` y el `style` que calcula su virtualizador (height, transform).
+- **Principio:** La Raw no itera arrays gigantes ni integra virtualización. El consumidor hace por ejemplo: `virtualRows.map(vr => <tr key={vr.key} {...getRowProps({ index: vr.index, style: { height: ..., transform: ... } })} />)`.
+- **Uso:** Dentro de ImporterProvider. Opcionalmente con **onNavigateToIndex** (desde useRawDataTable) para coordinar foco con virtualizador.
+
+### useRawTableRow (hook principal)
+
+- **Opciones:** `{ index, style?, row? }` (RawTableRowContext).
+- **Retorno:** **getRowProps(merge?)** (fusiona con className/style del consumidor), **row** (ValidatedRow o undefined), **rowErrors** (errores de fila).
+- **Uso:** Por cada fila que se renderiza (típicamente dentro del map del virtualizador).
+
+### useRawCell (hook principal)
+
+- **Opciones:** `{ rowIndex, fieldId }` (RawCellContext).
+- **Retorno:** **value**, **errors**, **isPending**, **isEditing**, **getCellProps({ className?, style? })**, **getEditInputProps()**, **getErrorProps()**, **editCell**.
+- **Contrato DOM:** **getCellProps** aplica `role="gridcell"`, `tabIndex` (0 si enfocado, -1 si no), **data-pending="true"** mientras valida, **aria-invalid** cuando hay error; acepta merge de className/style. **getEditInputProps()** para el input en modo edición (value, onChange, etc.). **getErrorProps()** para el slot de error (role="alert", aria-live).
+- **editingEnabled:** Si el RootConfig tiene `editingEnabled: false`, la celda es solo lectura (no entra en edición).
+- **Optimistic update:** Al editar se muestra el valor de forma optimista; **data-pending** true hasta que el Worker responde.
+- **Uso:** Por cada celda. Ejemplo: `<td {...getCellProps({ className: '...' })}>{value}</td>`; si isEditing, mostrar input con getEditInputProps().
+
+### useRawErrorBadge (hook principal)
+
+- **Opciones:** `{ error: SheetError | null, translateError?(code, params) => string }`.
+- **Retorno:** **error** (code, params), **message** (traducido si hay translateError; si no, error.message o code), **translateError** (opcional, para slot custom).
+- **Uso:** Slot para mostrar un error de celda/fila con I18n. Sin UI obligatoria; el consumidor pinta el mensaje.
 
 ---
 

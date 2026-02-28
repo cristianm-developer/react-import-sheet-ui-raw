@@ -8,3 +8,12 @@ export type {
   RawMappingSuggestContext,
 } from './input-phase.js';
 export { getLayoutFieldOptions } from './input-phase.js';
+
+export type {
+  TableHeader,
+  RawTableRowContext,
+  RawCellContext,
+  GetRowPropsResult,
+  GetRowPropsOptions,
+  GetCellPropsOptions,
+} from './data-phase.js';

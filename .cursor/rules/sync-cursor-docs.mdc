@@ -1,0 +1,22 @@
+---
+description: Mantener Architecture.md, devlog.md y history.md sincronizados al agregar o modificar código/features
+alwaysApply: true
+---
+
+# Sincronizar documentación .cursor
+
+Cada vez que se **agregue código** o se **modifiquen features**, actualizar estos tres archivos para que sigan reflejando el estado real del proyecto:
+
+| Archivo | Cuándo actualizar | Qué incluir |
+|---------|-------------------|-------------|
+| **`.cursor/Architecture.md`** | Cambios de features, nueva estructura, nuevos hooks/wrappers o flujos. | Esquema de pasos, tablas de hooks/wrappers, diagramas de estado, visión headless. |
+| **`.cursor/devlog.md`** | Después de cada cambio significativo (no cada typo). | Entrada con formato: `### YYYY-MM-DD`, **Qué**, **Archivos**, **Notas** (opcional). |
+| **`.cursor/history.md`** | Decisiones de diseño o cambios técnicos relevantes. | ADR con: título, fecha, estado, contexto, decisión, consecuencias. |
+
+## Checklist rápido
+
+- [ ] ¿Cambié features o estructura? → actualizar **Architecture.md**
+- [ ] ¿Hice un cambio significativo de código? → añadir entrada en **devlog.md**
+- [ ] ¿Tomé una decisión de diseño/arquitectura? → registrar ADR en **history.md**
+
+No dejar la sesión sin haber revisado si estos archivos requieren actualización.
