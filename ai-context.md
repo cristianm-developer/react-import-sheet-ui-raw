@@ -52,8 +52,10 @@ _(Actualizar al finalizar cada hook: nombre, retorno (estado, acciones, getters)
 | **useRawMappingRow** / RawMappingRow         | Por fila: headerOriginal, options, value, onChange, mappingStatus.             | Step 3 |
 | **useRawMappingSuggest** / RawMappingSuggest | matchScore (0–100), suggestedFieldId/Label; solo si fuzzyMatch.                | Step 3 |
 | **useRawImportAction** / RawImportAction     | disabled (mapeo incompleto), runImport (applyMapping).                         | Step 3 |
-| **useRawProgress** / RawProgressMonitor      | Progreso vía EventTarget; ref/valor para barra sin re-renders; phase actual.   | Step 4 |
-| **useRawAbort** / RawAbortController         | Acción `abort()` del Core; wrapper: botón que la invoca.                       | Step 4 |
+| **useRawProgress** / RawProgressDisplay      | Progreso vía EventTarget; progressRef (sin re-renders); opcional onProgress.   | Step 4 |
+| **useRawStatus** / RawStatusIndicator        | status + errorDetail (objeto diagnóstico en error).                            | Step 4 |
+| **useRawAbort** / RawAbortButton             | Acción `abort()` del Core; wrapper: botón que la invoca.                       | Step 4 |
+| **RawErrorBoundary**                         | Error Boundary; fallback y onError opcional.                                   | Step 4 |
 
 ---
 
@@ -209,41 +211,82 @@ Ejemplo sin wrappers: `<ImporterProvider {...providerProps}><RootConfigProvider 
 
 ---
 
-### useRawProgress / RawProgressMonitor (wrapper opcional)
+### useRawProgress (hook principal)
 
-- **Hook useRawProgress:** retorna `{ phase, progressRef, aborted, onProgress? }` — `progressRef` actualizado en cada evento sin re-renders; ideal para barra de progreso.
-- **Wrapper RawProgressMonitor:** usa el hook y expone render prop `children({ phase, progressRef, aborted })`; props `className?`, `style?`, `onProgress?`.
-- **Contrato:** ref al contenedor raíz (`div`), `data-ris-ui="raw-progress-monitor"`.
-- **Uso:** Dentro de RawImporterRoot; típicamente en el slot `renderProcess` de RawStatusGuard. No re-renderiza con cada %; usar `progressRef.current` o `onProgress` para la barra.
+- **Opciones:** `onProgress?(detail)` — opcional; si se pasa, se invoca en cada evento `importer-progress` (para que el consumidor haga setState si lo desea).
+- **Retorno:** `{ progressRef, onProgress? }` — **progressRef** (RefObject&lt;ImporterProgressDetail | null&gt;) se actualiza en cada evento sin re-renders. Leer `progressRef.current` (p. ej. en requestAnimationFrame) para pintar la barra.
+- **Uso:** Dentro de ImporterProvider; típicamente en el slot `renderProcess` de RawStatusGuard.
 
 ```tsx
-<RawProgressMonitor onProgress={(d) => setPercent(d.globalPercent ?? 0)} className="my-progress">
-  {({ phase, progressRef, aborted }) => (
-    <>
-      <span>{phase || 'Processing...'}</span>
-      <div role="progressbar" aria-valuenow={progressRef.current?.globalPercent ?? 0}>
-        {/* barra con estilos propios */}
-      </div>
-      {aborted && <span>Cancelled</span>}
-    </>
-  )}
-</RawProgressMonitor>
+const { progressRef } = useRawProgress();
+// Opción 1: leer ref en animación
+requestAnimationFrame(function tick() {
+  const p = progressRef.current?.globalPercent ?? 0;
+  barRef.current?.style.setProperty('width', `${p}%`);
+  requestAnimationFrame(tick);
+});
+// Opción 2: onProgress para setState
+const { progressRef, onProgress } = useRawProgress({
+  onProgress: (d) => setPercent(d.globalPercent ?? 0),
+});
+```
+
+### RawProgressDisplay (wrapper opcional)
+
+- **Props:** `children(state)` con state = `{ progressRef, onProgress? }`; `className?`, `style?`, `onProgress?`.
+- **Contrato:** `data-ris-ui="raw-progress-display"`.
+
+---
+
+### useRawStatus (hook principal)
+
+- **Retorno:** `{ status, errorDetail? }` — **status** es ImporterStatus del Core; **errorDetail** (objeto de diagnóstico tipo SheetError: code, params, level, message) cuando `status === 'error'`. Permite mensajes contextuales (ej. "Tu navegador se quedó sin memoria"). Cuando el headless exponga lastError se conectará aquí.
+- **Uso:** Para mostrar estado actual y mensaje de error en la vista de error.
+
+```tsx
+const { status, errorDetail } = useRawStatus();
+if (status === 'error' && errorDetail) {
+  return <p>{errorDetail.message ?? errorDetail.code}</p>;
+}
+```
+
+### RawStatusIndicator (wrapper opcional)
+
+- **Props:** `children({ status, errorDetail })`; `className?`, `style?`.
+- **Contrato:** `data-ris-ui="raw-status-indicator"`.
+
+---
+
+### useRawAbort (hook principal)
+
+- **Retorno:** `{ abort }` — función que llama a `abort()` del Core (detiene Workers). Sin UI; el consumidor la asocia a un botón.
+- **Uso:** En la vista de proceso, botón "Cancelar" con `onClick={abort}`.
+
+### RawAbortButton (wrapper opcional)
+
+- **Props:** `children?`, `className?`, `style?`, `disabled?`, `aria-label?`. Por defecto se deshabilita cuando el status no es de proceso (loading/parsing/validating/transforming).
+- **Contrato:** `<button type="button">`, `data-ris-ui="raw-abort-button"`.
+
+```tsx
+<RawAbortButton className="btn-cancel" aria-label="Cancel import">
+  Cancelar
+</RawAbortButton>
 ```
 
 ---
 
-### useRawAbort / RawAbortController (wrapper opcional)
+### RawErrorBoundary (opcional)
 
-- **Hook useRawAbort:** retorna `{ abort, getButtonProps(options?) }` — `abort()` llama al Core; getter aplica onClick y contrato al botón.
-- **Wrapper RawAbortController:** usa el hook; props `className?`, `style?`, `children?`, `disabled?`, `aria-label?`. Al click invoca `abort()`.
-- **Contrato:** ref al `<button>`, `data-ris-ui="raw-abort-controller"`, `type="button"`.
-- **Uso:** Dentro de RawImporterRoot; típicamente junto a RawProgressMonitor en la vista de Proceso.
+- **Props:** `children`, **fallback** (ReactNode o `(error, errorInfo) => ReactNode`), **onError?(error, errorInfo)**.
+- **Comportamiento:** Error Boundary que captura errores fatales (Worker murió, error de React). No sustituye useRawStatus (errorDetail para errores de flujo).
+- **Contrato:** `data-ris-ui="raw-error-boundary"`.
 
-```tsx
-<RawAbortController className="btn-cancel" aria-label="Cancel import">
-  Cancelar
-</RawAbortController>
-```
+---
+
+### Telemetría
+
+- **useImporter().metrics** (PipelineMetrics: timings, totalMs, rowCount) — reexportado del headless. Mostrar en renderResult (ej. "10.000 filas en 1,2s").
+- **useImporterMetrics()** — wrapper que devuelve `useImporter().metrics`.
 
 ---
 

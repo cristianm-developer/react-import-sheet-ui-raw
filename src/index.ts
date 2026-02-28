@@ -47,6 +47,17 @@ export type {
 export { useRawImportAction } from './hooks/useRawImportAction/index';
 export type { UseRawImportActionReturn } from './hooks/useRawImportAction/index';
 
+export { useRawProgress } from './hooks/useRawProgress/index';
+export type { UseRawProgressOptions, UseRawProgressReturn } from './hooks/useRawProgress/index';
+
+export { useRawStatus } from './hooks/useRawStatus/index';
+export type { UseRawStatusReturn } from './hooks/useRawStatus/index';
+
+export { useRawAbort } from './hooks/useRawAbort/index';
+export type { UseRawAbortReturn } from './hooks/useRawAbort/index';
+
+export { useImporterMetrics } from './hooks/useImporterMetrics/index';
+
 export type { StatusView } from './shared/types/status-views';
 export { getViewFromState } from './shared/types/status-views';
 export type {
@@ -77,6 +88,18 @@ export type { RawMappingSuggestProps } from './components/RawMappingSuggest';
 
 export { RawImportAction } from './components/RawImportAction';
 export type { RawImportActionProps } from './components/RawImportAction';
+
+export { RawErrorBoundary } from './components/RawErrorBoundary';
+export type { RawErrorBoundaryProps } from './components/RawErrorBoundary';
+
+export { RawProgressDisplay } from './components/RawProgressDisplay';
+export type { RawProgressDisplayProps } from './components/RawProgressDisplay';
+
+export { RawStatusIndicator } from './components/RawStatusIndicator';
+export type { RawStatusIndicatorProps } from './components/RawStatusIndicator';
+
+export { RawAbortButton } from './components/RawAbortButton';
+export type { RawAbortButtonProps } from './components/RawAbortButton';
 
 export {
   ImporterProvider,

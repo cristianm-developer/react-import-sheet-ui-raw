@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { ImporterProvider } from '@cristianm/react-import-sheet-headless';
-import { RawAbortController } from '../components/RawAbortController';
+import { RawAbortButton } from '../components/RawAbortButton';
 
-const meta: Meta<typeof RawAbortController> = {
-  title: 'Raw/RawAbortController',
-  component: RawAbortController,
+const meta: Meta<typeof RawAbortButton> = {
+  title: 'Raw/RawAbortButton',
+  component: RawAbortButton,
   decorators: [
     (Story) => (
       <ImporterProvider layout={null} engine="auto">
@@ -16,7 +16,7 @@ const meta: Meta<typeof RawAbortController> = {
 
 export default meta;
 
-type Story = StoryObj<typeof RawAbortController>;
+type Story = StoryObj<typeof RawAbortButton>;
 
 export const Default: Story = {
   args: {
@@ -28,5 +28,12 @@ export const Disabled: Story = {
   args: {
     children: 'Cancelar',
     disabled: true,
+  },
+};
+
+export const WithAriaLabel: Story = {
+  args: {
+    children: 'Stop import',
+    'aria-label': 'Stop import',
   },
 };
