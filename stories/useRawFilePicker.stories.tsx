@@ -28,27 +28,33 @@ function FilePickerDemo() {
   );
 }
 
-function WithRawImporterRoot() {
+function FilePickerWithView() {
+  const { view } = useStatusView();
   return (
-    <RawImporterRoot layout={layout} engine="auto">
-      <div>
-        <p className="mb-2">useRawFilePicker: apply getRootProps/getInputProps to your nodes.</p>
-        <FilePickerDemo />
-        <p className="mt-2 text-sm text-gray-600">View: {useStatusView().view}</p>
-      </div>
-    </RawImporterRoot>
+    <div>
+      <p className="mb-2">useRawFilePicker: apply getRootProps/getInputProps to your nodes.</p>
+      <FilePickerDemo />
+      <p className="mt-2 text-sm text-gray-600">View: {view}</p>
+    </div>
   );
 }
 
-const meta: Meta<typeof WithRawImporterRoot> = {
+const meta: Meta<typeof FilePickerWithView> = {
   title: 'Raw/useRawFilePicker',
-  component: WithRawImporterRoot,
+  component: FilePickerWithView,
+  decorators: [
+    (Story) => (
+      <RawImporterRoot layout={layout} engine="auto">
+        <Story />
+      </RawImporterRoot>
+    ),
+  ],
 };
 
 export default meta;
 
-type Story = StoryObj<typeof WithRawImporterRoot>;
+type Story = StoryObj<typeof FilePickerWithView>;
 
 export const Default: Story = {
-  render: () => <WithRawImporterRoot />,
+  render: () => <FilePickerWithView />,
 };

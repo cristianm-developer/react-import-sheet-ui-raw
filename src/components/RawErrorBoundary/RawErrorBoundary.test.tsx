@@ -18,6 +18,7 @@ describe('RawErrorBoundary', () => {
   });
 
   it('shows fallback and calls onError when child throws', () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const onError = vi.fn();
     render(
       <RawErrorBoundary fallback={<div>Error fallback</div>} onError={onError}>
@@ -29,9 +30,11 @@ describe('RawErrorBoundary', () => {
       expect.any(Error),
       expect.objectContaining({ componentStack: expect.any(String) })
     );
+    consoleErrorSpy.mockRestore();
   });
 
   it('renders function fallback with error and errorInfo', () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const fallbackFn = vi.fn((err: Error) => <div>Caught: {err.message}</div>);
     render(
       <RawErrorBoundary fallback={fallbackFn}>
@@ -40,9 +43,11 @@ describe('RawErrorBoundary', () => {
     );
     expect(fallbackFn).toHaveBeenCalledWith(expect.any(Error), expect.any(Object));
     expect(screen.getByText(/Caught: Test error/)).toBeInTheDocument();
+    consoleErrorSpy.mockRestore();
   });
 
   it('has data-ris-ui attribute on fallback container', () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     render(
       <RawErrorBoundary fallback={<div>Error</div>}>
         <Thrower />
@@ -50,5 +55,6 @@ describe('RawErrorBoundary', () => {
     );
     const container = document.querySelector('[data-ris-ui="raw-error-boundary"]');
     expect(container).toBeInTheDocument();
+    consoleErrorSpy.mockRestore();
   });
 });

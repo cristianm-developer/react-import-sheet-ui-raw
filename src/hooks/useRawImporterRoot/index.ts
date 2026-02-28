@@ -7,6 +7,7 @@ export {
 } from './RootConfigContext.jsx';
 export type { RootConfigProviderProps, LayoutProviderProps } from './RootConfigContext.jsx';
 export type {
+  AutoApplyMappingWhenMismatchesAtMost,
   RootConfig,
   RootConfigStages,
   UseRawImporterRootOptions,

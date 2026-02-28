@@ -14,11 +14,13 @@ export interface UseRawFilePickerReturn {
   isDragging: boolean;
   getRootProps: (options?: GetRootPropsOptions) => {
     ref: (el: HTMLElement | null) => void;
+    onClick: (e: React.MouseEvent) => void;
     onDragOver: (e: React.DragEvent) => void;
     onDragLeave: (e: React.DragEvent) => void;
     onDrop: (e: React.DragEvent) => void;
     role: string;
-    'aria-dropzone'?: string;
+    'aria-label'?: string;
+    'data-dropzone'?: string;
     className?: string;
     style?: CSSProperties;
   };

@@ -56,18 +56,26 @@ export function useRawFilePicker(options: UseRawFilePickerOptions = {}): UseRawF
     [processFile]
   );
 
+  const handleRootClick = useCallback((e: React.MouseEvent) => {
+    if (e.target !== inputRef.current) {
+      inputRef.current?.click();
+    }
+  }, []);
+
   const getRootProps = useCallback(
     (opts?: GetRootPropsOptions) => ({
       ref: setRootRef,
+      onClick: handleRootClick,
       onDragOver: handleDragOver,
       onDragLeave: handleDragLeave,
       onDrop: handleDrop,
       role: 'button',
-      'aria-dropzone': 'true',
+      'aria-label': 'Drop zone for file import',
+      'data-dropzone': 'true',
       className: opts?.className,
       style: opts?.style,
     }),
-    [handleDragOver, handleDragLeave, handleDrop, setRootRef]
+    [handleRootClick, handleDragOver, handleDragLeave, handleDrop, setRootRef]
   );
 
   const getInputProps = useCallback(

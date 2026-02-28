@@ -17,15 +17,17 @@ describe('useRawFilePicker', () => {
     expect(typeof result.current.getInputProps).toBe('function');
   });
 
-  it('getRootProps returns ref, onDragOver, onDragLeave, onDrop, role, aria-dropzone', () => {
+  it('getRootProps returns ref, onClick, onDragOver, onDragLeave, onDrop, role, aria-label, data-dropzone', () => {
     const { result } = renderHook(() => useRawFilePicker(), { wrapper });
     const props = result.current.getRootProps();
     expect(props.ref).toBeDefined();
+    expect(typeof props.onClick).toBe('function');
     expect(typeof props.onDragOver).toBe('function');
     expect(typeof props.onDragLeave).toBe('function');
     expect(typeof props.onDrop).toBe('function');
     expect(props.role).toBe('button');
-    expect(props['aria-dropzone']).toBe('true');
+    expect(props['aria-label']).toBe('Drop zone for file import');
+    expect(props['data-dropzone']).toBe('true');
   });
 
   it('getRootProps merges className and style', () => {

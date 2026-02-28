@@ -1,2 +1,2 @@
 export { RawImporterWorkflow } from './RawImporterWorkflow';
-export type { RawImporterWorkflowProps } from './types';
+export type { RawImporterWorkflowErrorOptions, RawImporterWorkflowProps } from './types';

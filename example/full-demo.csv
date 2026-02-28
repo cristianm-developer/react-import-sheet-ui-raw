@@ -1,0 +1,6 @@
+Email,Name,Phone,Date
+alice@example.com,Alice Smith,+1 555 111 0000,2024-01-15
+bob@test.org,Bob Jones,+1 555 222 0000,2024-02-20
+invalid-email,Carol White,+1 555 333 0000,2024-03-10
+diana@demo.com,Diana Brown,,2024-04-05
+eve@sample.net,Eve Davis,+1 555 555 0000,bad-date

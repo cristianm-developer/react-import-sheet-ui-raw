@@ -28,21 +28,27 @@ describe('useRawImporterRoot', () => {
       fuzzyMatch: true,
       editingEnabled: true,
       stages: {},
+      autoApplyMappingWhenMismatchesAtMost: 'never',
+      showErrorWhenMismatchesAbove: undefined,
     });
   });
 
-  it('returns rootConfig with fuzzyMatch, editingEnabled, stages', () => {
+  it('returns rootConfig with fuzzyMatch, editingEnabled, stages, mapping options', () => {
     const { result } = renderHook(() =>
       useRawImporterRoot({
         fuzzyMatch: false,
         editingEnabled: false,
         stages: { mapping: false, result: true },
+        autoApplyMappingWhenMismatchesAtMost: 1,
+        showErrorWhenMismatchesAbove: 5,
       })
     );
     expect(result.current.rootConfig).toEqual({
       fuzzyMatch: false,
       editingEnabled: false,
       stages: { mapping: false, result: true },
+      autoApplyMappingWhenMismatchesAtMost: 1,
+      showErrorWhenMismatchesAbove: 5,
     });
   });
 

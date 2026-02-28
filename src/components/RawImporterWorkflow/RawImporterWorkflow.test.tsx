@@ -26,6 +26,7 @@ describe('RawImporterWorkflow', () => {
       status: 'idle',
       progressEventTarget: new EventTarget(),
       convertResult: null,
+      mappingErrorDetail: null,
     });
     const { container } = renderWithRoot(<RawImporterWorkflow />);
     expect(container.querySelector('[data-ris-ui="raw-importer-workflow"]')).toBeInTheDocument();
@@ -37,6 +38,7 @@ describe('RawImporterWorkflow', () => {
       status: 'idle',
       progressEventTarget: new EventTarget(),
       convertResult: null,
+      mappingErrorDetail: null,
     });
     renderWithRoot(<RawImporterWorkflow />);
     expect(document.querySelector('[data-ris-ui="raw-file-picker"]')).toBeInTheDocument();
@@ -48,6 +50,7 @@ describe('RawImporterWorkflow', () => {
       status: 'idle',
       progressEventTarget: new EventTarget(),
       convertResult: null,
+      mappingErrorDetail: null,
     });
     renderWithRoot(
       <RawImporterWorkflow renderIdle={() => <span data-testid="custom-idle">Custom idle</span>} />
@@ -61,6 +64,7 @@ describe('RawImporterWorkflow', () => {
       status: 'idle',
       progressEventTarget: new EventTarget(),
       convertResult: {},
+      mappingErrorDetail: null,
     });
     renderWithRoot(<RawImporterWorkflow />);
     expect(document.querySelector('[data-ris-ui="raw-mapping-table"]')).toBeInTheDocument();
@@ -73,6 +77,7 @@ describe('RawImporterWorkflow', () => {
       status: 'idle',
       progressEventTarget: new EventTarget(),
       convertResult: {},
+      mappingErrorDetail: null,
     });
     renderWithRoot(
       <RawImporterWorkflow
@@ -88,6 +93,7 @@ describe('RawImporterWorkflow', () => {
       status: 'validating',
       progressEventTarget: new EventTarget(),
       convertResult: null,
+      mappingErrorDetail: null,
     });
     renderWithRoot(<RawImporterWorkflow />);
     expect(document.querySelector('[data-ris-ui="raw-progress-display"]')).toBeInTheDocument();
@@ -101,6 +107,7 @@ describe('RawImporterWorkflow', () => {
       status: 'validating',
       progressEventTarget: new EventTarget(),
       convertResult: null,
+      mappingErrorDetail: null,
     });
     renderWithRoot(
       <RawImporterWorkflow
@@ -117,6 +124,7 @@ describe('RawImporterWorkflow', () => {
       status: 'success',
       progressEventTarget: new EventTarget(),
       convertResult: null,
+      mappingErrorDetail: null,
     });
     renderWithRoot(<RawImporterWorkflow />);
     expect(document.querySelector('[data-ris-ui="raw-workflow-toolbar"]')).toBeInTheDocument();
@@ -130,6 +138,7 @@ describe('RawImporterWorkflow', () => {
       status: 'success',
       progressEventTarget: new EventTarget(),
       convertResult: null,
+      mappingErrorDetail: null,
     });
     renderWithRoot(
       <RawImporterWorkflow renderResult={() => <span data-testid="custom-result">Results</span>} />
@@ -138,15 +147,36 @@ describe('RawImporterWorkflow', () => {
     expect(document.querySelector('[data-ris-ui="raw-workflow-toolbar"]')).not.toBeInTheDocument();
   });
 
-  it('renders default error as idle (retry) when view is error', () => {
+  it('renders default error as idle (retry) when view is error and no mappingErrorDetail', () => {
     vi.mocked(useStatusView).mockReturnValue({
       view: 'error',
       status: 'error',
       progressEventTarget: new EventTarget(),
       convertResult: null,
+      mappingErrorDetail: null,
     });
     renderWithRoot(<RawImporterWorkflow />);
     expect(document.querySelector('[data-ris-ui="raw-file-picker"]')).toBeInTheDocument();
+  });
+
+  it('renders mapping error message when view is error and mappingErrorDetail is TOO_MANY_MISMATCHES', () => {
+    vi.mocked(useStatusView).mockReturnValue({
+      view: 'error',
+      status: 'idle',
+      progressEventTarget: new EventTarget(),
+      convertResult: null,
+      mappingErrorDetail: {
+        code: 'TOO_MANY_MISMATCHES',
+        mismatchCount: 5,
+        maxAllowed: 2,
+      },
+    });
+    renderWithRoot(<RawImporterWorkflow />);
+    expect(
+      document.querySelector('[data-ris-ui="raw-workflow-mapping-error"]')
+    ).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent(/Too many column mismatches \(5\)/);
+    expect(screen.getByRole('alert')).toHaveTextContent(/Maximum allowed: 2/);
   });
 
   it('renders custom renderError when provided and view is error', () => {
@@ -155,10 +185,17 @@ describe('RawImporterWorkflow', () => {
       status: 'error',
       progressEventTarget: new EventTarget(),
       convertResult: null,
+      mappingErrorDetail: null,
     });
     renderWithRoot(
       <RawImporterWorkflow
-        renderError={() => <span data-testid="custom-error">Something went wrong</span>}
+        renderError={({ mappingErrorDetail }) => (
+          <span data-testid="custom-error">
+            {mappingErrorDetail
+              ? `Mismatches: ${mappingErrorDetail.mismatchCount}`
+              : 'Something went wrong'}
+          </span>
+        )}
       />
     );
     expect(screen.getByTestId('custom-error')).toHaveTextContent('Something went wrong');

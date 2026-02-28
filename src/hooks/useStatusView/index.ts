@@ -1,2 +1,2 @@
 export { useStatusView } from './useStatusView.js';
-export type { UseStatusViewReturn } from './types.js';
+export type { MappingErrorDetail, UseStatusViewReturn } from './types.js';

@@ -19,10 +19,19 @@ import { useRawFilterToggle } from '../../hooks/useRawFilterToggle';
 import { useRawExport } from '../../hooks/useRawExport';
 import { useRawPagination } from '../../hooks/useRawPagination';
 import { useRawPersistence } from '../../hooks/useRawPersistence';
+import type { MappingErrorDetail } from '../../hooks/useStatusView/types';
 import type { RawImporterWorkflowProps } from './types';
 
 function DefaultIdle() {
-  return <RawFilePicker>{() => null}</RawFilePicker>;
+  return (
+    <RawFilePicker>
+      {(state) => (
+        <span data-ris-ui="raw-file-picker-prompt">
+          {state.isDragging ? 'Drop file here' : 'Click or drop file here'}
+        </span>
+      )}
+    </RawFilePicker>
+  );
 }
 
 function DefaultMapping() {
@@ -238,7 +247,15 @@ function DefaultResult() {
   );
 }
 
-function DefaultError() {
+function DefaultError({ mappingErrorDetail }: { mappingErrorDetail: MappingErrorDetail | null }) {
+  if (mappingErrorDetail?.code === 'TOO_MANY_MISMATCHES') {
+    return (
+      <div data-ris-ui="raw-workflow-mapping-error" role="alert">
+        Too many column mismatches ({mappingErrorDetail.mismatchCount}). Maximum allowed:{' '}
+        {mappingErrorDetail.maxAllowed}.
+      </div>
+    );
+  }
   return <DefaultIdle />;
 }
 
@@ -247,7 +264,7 @@ export const RawImporterWorkflow = forwardRef<HTMLDivElement, RawImporterWorkflo
     { className, style, renderIdle, renderMapping, renderProcess, renderResult, renderError },
     ref
   ) {
-    const { view } = useStatusView();
+    const { view, mappingErrorDetail } = useStatusView();
 
     let content: ReactNode;
     switch (view) {
@@ -264,7 +281,11 @@ export const RawImporterWorkflow = forwardRef<HTMLDivElement, RawImporterWorkflo
         content = renderResult ? renderResult() : <DefaultResult />;
         break;
       case 'error':
-        content = renderError ? renderError() : <DefaultError />;
+        content = renderError ? (
+          renderError({ mappingErrorDetail })
+        ) : (
+          <DefaultError mappingErrorDetail={mappingErrorDetail} />
+        );
         break;
       default:
         content = renderIdle ? renderIdle() : <DefaultIdle />;

@@ -1,10 +1,16 @@
 ---
-globs: *.tsx,*.ts
-alwaysApply: false
+alwaysApply: true
 ---
 # Contexto y sincronización — @cristianm/react-import-sheet-ui-raw
 
 Regla única que agrupa: **obtener contexto** antes de codear, **mantener al día** la documentación `.cursor`, el **README** y la **coherencia técnica** con el headless y la lib Raw.
+
+---
+
+## Obligatorio (no saltarse)
+
+- **Al empezar** cualquier tarea de código o diseño: **leer** `.cursor/Architecture.md`, `.cursor/history.md`, `.cursor/devlog.md` (aunque sea en resumen) para tener contexto.
+- **Al terminar** cambios que toquen features, estructura o decisiones: **actualizar** esos mismos archivos + README/ai-context si aplica (ver secciones 2–4). No dar la respuesta por cerrada sin revisar el checklist de la sección 2.
 
 ---
 
@@ -33,7 +39,7 @@ Cada vez que se **agregue código** o se **modifiquen features**, revisar si hay
 | **`.cursor/devlog.md`** | Después de cada cambio significativo (no cada typo). | Entrada: `### YYYY-MM-DD`, **Qué**, **Archivos**, **Notas** (opcional). |
 | **`.cursor/history.md`** | Decisiones de diseño o cambios técnicos relevantes. | ADR: título, fecha, estado, contexto, decisión, consecuencias. |
 
-**Checklist:** ¿Cambié features o estructura? → Architecture.md. ¿Cambio significativo? → devlog.md. ¿Decisión de diseño? → history.md. No cerrar sesión sin revisar si estos archivos requieren actualización.
+**Checklist (revisar antes de cerrar la respuesta):** ¿Cambié features o estructura? → actualizar Architecture.md. ¿Cambio significativo? → añadir entrada en devlog.md (fecha, Qué, Archivos). ¿Decisión de diseño? → añadir ADR en history.md. Si no hay nada que actualizar, no hace falta tocar los archivos; pero **siempre** revisar.
 
 ---
 
@@ -59,4 +65,4 @@ Secciones del README a tocar: **Install**, **Usage** (hooks primero; luego wrapp
 
 ---
 
-**Resumen:** Contexto = `Architecture.md`, `history.md`, `devlog.md`. Sincronizar esos tres + README + ai-context según cambios; mantener coherencia con headless y estilo Raw (hooks, sin estilos).
+**Resumen:** (1) Al empezar: leer `Architecture.md`, `history.md`, `devlog.md`. (2) Al terminar: si hubo cambios significativos, actualizar esos tres + README + ai-context según la tabla; mantener coherencia con headless y estilo Raw (hooks, sin estilos).

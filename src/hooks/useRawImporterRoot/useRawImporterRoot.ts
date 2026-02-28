@@ -14,6 +14,8 @@ export function useRawImporterRoot(
     fuzzyMatch = true,
     editingEnabled = true,
     stages = defaultStages,
+    autoApplyMappingWhenMismatchesAtMost = 'never',
+    showErrorWhenMismatchesAbove,
   } = options;
 
   const providerProps = useMemo(
@@ -31,8 +33,16 @@ export function useRawImporterRoot(
       fuzzyMatch,
       editingEnabled,
       stages: { ...defaultStages, ...stages },
+      autoApplyMappingWhenMismatchesAtMost,
+      showErrorWhenMismatchesAbove,
     }),
-    [fuzzyMatch, editingEnabled, stages]
+    [
+      fuzzyMatch,
+      editingEnabled,
+      stages,
+      autoApplyMappingWhenMismatchesAtMost,
+      showErrorWhenMismatchesAbove,
+    ]
   );
 
   return { providerProps, rootConfig };

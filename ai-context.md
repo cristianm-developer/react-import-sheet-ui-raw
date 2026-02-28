@@ -73,8 +73,9 @@ _(Actualizar al finalizar cada hook: nombre, retorno (estado, acciones, getters)
 
 ### useRawImporterRoot (hook principal)
 
-- **Opciones:** `layout?`, `engine?`, `persist?`, `persistKey?`, `fuzzyMatch?` (default true), `editingEnabled?` (default true), `stages?` (`{ mapping?, process?, result? }`).
-- **Retorno:** `{ providerProps, rootConfig }` — **providerProps** son las props para **ImporterProvider** del headless (layout, engine, persist, persistKey); **rootConfig** es `{ fuzzyMatch, editingEnabled, stages }` para inyectar en **RootConfigContext**.
+- **Opciones:** `layout?`, `engine?`, `persist?`, `persistKey?`, `fuzzyMatch?` (default true), `editingEnabled?` (default true), `stages?` (`{ mapping?, process?, result? }`), **`autoApplyMappingWhenMismatchesAtMost?`** (`number | 'never'`, default `'never'`), **`showErrorWhenMismatchesAbove?`** (number, opcional).
+- **Retorno:** `{ providerProps, rootConfig }` — **providerProps** son las props para **ImporterProvider** del headless (layout, engine, persist, persistKey); **rootConfig** incluye `fuzzyMatch`, `editingEnabled`, `stages`, `autoApplyMappingWhenMismatchesAtMost`, `showErrorWhenMismatchesAbove` para inyectar en **RootConfigContext**.
+- **Mapeo:** `autoApplyMappingWhenMismatchesAtMost: 0` = auto-aplicar solo cuando 0 desajustes; `1` = auto-aplicar cuando ≤1; etc. `showErrorWhenMismatchesAbove: N` = mostrar vista error (con `mappingErrorDetail.code === 'TOO_MANY_MISMATCHES'`) cuando desajustes > N.
 - **RootConfigProvider:** componente que recibe `rootConfig` y envuelve `children`; debe usarse dentro de ImporterProvider para que useStatusView lea stages.
 - **Ejemplo (solo hooks):** el usuario monta `<ImporterProvider {...providerProps}><RootConfigProvider rootConfig={rootConfig}>{children}</RootConfigProvider></ImporterProvider>`.
 
@@ -98,9 +99,9 @@ return (
 ### useStatusView (hook principal)
 
 - **Uso:** Dentro de `ImporterProvider` (y opcionalmente dentro de **RootConfigProvider** para respetar `stages`).
-- **Retorno:** `{ view, status, progressEventTarget, convertResult }` — **view** es `'idle' | 'mapping' | 'process' | 'result' | 'error'`; el resto son datos del headless para renderizar.
-- **Lógica:** Si `convertResult !== null` → view = `'mapping'`; si no, se deriva de **status** (idle/loading/parsing → idle; validating/transforming → process; success → result; error/cancelled → error). Si `rootConfig.stages` deshabilita una vista (p. ej. `stages.mapping === false`), se devuelve `'idle'` en lugar de `'mapping'`.
-- **Sin UI:** el hook solo devuelve datos; el consumidor usa `view` para decidir qué renderizar.
+- **Retorno:** `{ view, status, progressEventTarget, convertResult, mappingErrorDetail }` — **view** es `'idle' | 'mapping' | 'process' | 'result' | 'error'`; **mappingErrorDetail** es `null` o `{ code: 'TOO_MANY_MISMATCHES', mismatchCount, maxAllowed }` cuando la vista es `'error'` por exceso de desajustes.
+- **Lógica:** Si `convertResult !== null` se considera la fase de mapeo. Si `showErrorWhenMismatchesAbove` está definido y `mismatches.length > showErrorWhenMismatchesAbove` → view = `'error'`, `mappingErrorDetail` con TOO_MANY_MISMATCHES. Si `autoApplyMappingWhenMismatchesAtMost` es un número y `mismatches.length <=` ese valor → se llama `convertResult.applyMapping()` (efecto) y view = `'process'`. En caso contrario view = `'mapping'`. Si no hay convertResult, view se deriva de **status**. Si `rootConfig.stages` deshabilita una vista, se devuelve `'idle'` en lugar de esa vista.
+- **Sin UI:** el hook solo devuelve datos; el consumidor usa `view` y `mappingErrorDetail` para decidir qué renderizar.
 
 ```tsx
 const { view, status, convertResult } = useStatusView();
@@ -115,7 +116,7 @@ if (view === 'error') return <ErrorMessage />;
 
 ### RawImporterRoot (wrapper opcional)
 
-- **Props:** las mismas que **useRawImporterRoot** (layout, engine, persist, persistKey, fuzzyMatch, editingEnabled, stages) más `children`, `className?`, `style?`.
+- **Props:** las mismas que **useRawImporterRoot** (layout, engine, persist, persistKey, fuzzyMatch, editingEnabled, stages, **autoApplyMappingWhenMismatchesAtMost**, **showErrorWhenMismatchesAbove**) más `children`, `className?`, `style?`.
 - **Comportamiento:** llama a useRawImporterRoot, renderiza **ImporterProvider** + **RootConfigProvider** y un `div` con ref, className, style y `data-ris-ui="raw-importer-root"`.
 - **Uso:** punto de entrada rápido; la lógica está en el hook.
 
@@ -143,7 +144,7 @@ if (view === 'error') return <ErrorMessage />;
 
 ### RawImporterWorkflow (orquestador opcional — Step 7)
 
-- **Props:** `className?`, `style?`, **renderIdle?**, **renderMapping?**, **renderProcess?**, **renderResult?**, **renderError?** (cada uno `() => ReactNode`). Si no se pasan slots, se usan composiciones por defecto con hooks/wrappers.
+- **Props:** `className?`, `style?`, **renderIdle?**, **renderMapping?**, **renderProcess?**, **renderResult?**, **renderError?** (`(options: { mappingErrorDetail }) => ReactNode`; `mappingErrorDetail` no nulo cuando la vista es error por TOO_MANY_MISMATCHES). Si no se pasan slots, se usan composiciones por defecto con hooks/wrappers.
 - **Comportamiento:** usa **useStatusView()** para obtener la vista actual y según ella renderiza el slot o la composición por defecto. Sin CSS; solo estructura y composición. `data-ris-ui="raw-importer-workflow"`. Ref al contenedor raíz.
 - **Tabla estado → contenido por defecto:**
 

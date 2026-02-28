@@ -84,6 +84,13 @@ function WithRoot() {
 const meta: Meta<typeof WithRoot> = {
   title: 'Raw/useRawMappingTable & useRawMappingRow',
   component: WithRoot,
+  decorators: [
+    (Story) => (
+      <RawImporterRoot layout={layout} engine="auto">
+        <Story />
+      </RawImporterRoot>
+    ),
+  ],
 };
 
 export default meta;

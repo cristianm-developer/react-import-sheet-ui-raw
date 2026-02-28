@@ -11,6 +11,7 @@ export {
   LayoutProvider,
 } from './hooks/useRawImporterRoot/index';
 export type {
+  AutoApplyMappingWhenMismatchesAtMost,
   RootConfig,
   LayoutProviderProps,
   RootConfigProviderProps,
@@ -20,7 +21,7 @@ export type {
 } from './hooks/useRawImporterRoot/index';
 
 export { useStatusView } from './hooks/useStatusView/index';
-export type { UseStatusViewReturn } from './hooks/useStatusView/index';
+export type { MappingErrorDetail, UseStatusViewReturn } from './hooks/useStatusView/index';
 
 export { useRawFilePicker } from './hooks/useRawFilePicker/index';
 export type {
@@ -162,7 +163,10 @@ export { RawAbortButton } from './components/RawAbortButton';
 export type { RawAbortButtonProps } from './components/RawAbortButton';
 
 export { RawImporterWorkflow } from './components/RawImporterWorkflow';
-export type { RawImporterWorkflowProps } from './components/RawImporterWorkflow';
+export type {
+  RawImporterWorkflowErrorOptions,
+  RawImporterWorkflowProps,
+} from './components/RawImporterWorkflow';
 
 export {
   ImporterProvider,

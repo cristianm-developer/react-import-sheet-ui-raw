@@ -6,6 +6,8 @@ const defaultConfig: RootConfig = {
   fuzzyMatch: true,
   editingEnabled: true,
   stages: {},
+  autoApplyMappingWhenMismatchesAtMost: 'never',
+  showErrorWhenMismatchesAbove: undefined,
 };
 
 export const RootConfigContext = createContext<RootConfig>(defaultConfig);
