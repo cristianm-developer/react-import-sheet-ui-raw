@@ -161,6 +161,9 @@ export type { RawStatusIndicatorProps } from './components/RawStatusIndicator';
 export { RawAbortButton } from './components/RawAbortButton';
 export type { RawAbortButtonProps } from './components/RawAbortButton';
 
+export { RawImporterWorkflow } from './components/RawImporterWorkflow';
+export type { RawImporterWorkflowProps } from './components/RawImporterWorkflow';
+
 export {
   ImporterProvider,
   useImporter,

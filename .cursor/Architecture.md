@@ -4,6 +4,19 @@ Esquema de pasos y estado actual del proyecto. La librería es **hooks-first hea
 
 ---
 
+## Documentos de sincronización (.cursor)
+
+Los documentos **`devlog.md`** y **`history.md`** son la memoria viva del proyecto y deben **actualizarse en cada cambio significativo**:
+
+| Documento                | Propósito                                                                   | Cuándo actualizar                                                                                                                |
+| ------------------------ | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **`.cursor/devlog.md`**  | Log cronológico: qué se hizo, archivos tocados, bloqueos y próximos pasos.  | Después de cada cambio significativo (no cada typo). Entrada con fecha, **Qué**, **Archivos**, **Notas**.                        |
+| **`.cursor/history.md`** | ADRs (Architecture Decision Records): decisiones de diseño y consecuencias. | Cuando se tome o se cambie una decisión técnica relevante. Entrada con título, fecha, estado, contexto, decisión, consecuencias. |
+
+**Importancia:** Mantener ambos al día evita pérdida de contexto, facilita onboarding y deja trazabilidad de por qué se eligió cada patrón. La regla `.cursor/rules/context-and-sync.mdc` detalla el flujo: leer estos archivos antes de codear y actualizarlos después de modificar features o diseño.
+
+---
+
 ## Visión: Hooks-First Headless (lib de lógica, no de componentes)
 
 - **Engine:** `@cristianm/react-import-sheet-headless` — lógica (Parser → Convert → Sanitizer → Validator → Transform).
@@ -296,27 +309,28 @@ src/
 
 Plan de construcción por pasos. Ejecutar en orden. Cada step tiene su checklist en `Construction Steps/`. Enfoque **hooks y prop-getters**; wrappers opcionales.
 
-| Step  | Archivo                                                                                             | Descripción                                                                                                                                                                       |
-| ----- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **1** | [step-01-settings.md](Construction%20Steps/step-01-settings.md)                                     | Settings: stack, dependencias, ESLint, Prettier, Vitest, Storybook, Husky, lint-staged, Commitlint                                                                                |
-| **2** | [step-02-root-and-status-view-hooks.md](Construction%20Steps/step-02-root-and-status-view-hooks.md) | Root & Status View: useRawImporterRoot, useStatusView; reexport headless; Public API; opcional RawImporterRoot, RawStatusGuard                                                    |
-| **3** | [step-03-input-phase-hooks.md](Construction%20Steps/step-03-input-phase-hooks.md)                   | Entrada: useRawFilePicker (getRootProps, getInputProps), useRawMappingTable, useRawMappingRow, useRawMappingSuggest, useRawImportAction; wrappers opcionales                      |
-| **4** | [step-04-feedback-phase-hooks.md](Construction%20Steps/step-04-feedback-phase-hooks.md)             | Feedback: useRawProgress, useRawStatus (errorDetail), useRawAbort; RawErrorBoundary; useImporter().metrics; wrappers opcionales                                                   |
-| **5** | [step-05-data-phase-hooks.md](Construction%20Steps/step-05-data-phase-hooks.md)                     | Datos: useRawDataTable, useRawTableHead, useRawTableBody (getRowProps), useRawTableRow, useRawCell (getCellProps, getEditInputProps), useRawErrorBadge; A11y; wrappers opcionales |
-| **6** | [step-06-view-phase-hooks.md](Construction%20Steps/step-06-view-phase-hooks.md)                     | Salida: useRawPagination, useRawFilterToggle, useRawExport, useRawPersistence; wrappers opcionales                                                                                |
-| **7** | [step-07-orchestrator-workflow.md](Construction%20Steps/step-07-orchestrator-workflow.md)           | Orquestador: RawImporterWorkflow (compone hooks o wrappers por vista: IDLE → FilePicker; MAPPING → Mapping; PROCESSING → Progress + Abort; RESULT → Toolbar + Grid + Footer)      |
+| Step  | Archivo                                                                                             | Descripción                                                                                                                                                                                   |
+| ----- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1** | [step-01-settings.md](Construction%20Steps/step-01-settings.md)                                     | Settings: stack, dependencias, ESLint, Prettier, Vitest, Storybook, Husky, lint-staged, Commitlint                                                                                            |
+| **2** | [step-02-root-and-status-view-hooks.md](Construction%20Steps/step-02-root-and-status-view-hooks.md) | Root & Status View: useRawImporterRoot, useStatusView; reexport headless; Public API; opcional RawImporterRoot, RawStatusGuard                                                                |
+| **3** | [step-03-input-phase-hooks.md](Construction%20Steps/step-03-input-phase-hooks.md)                   | Entrada: useRawFilePicker (getRootProps, getInputProps), useRawMappingTable, useRawMappingRow, useRawMappingSuggest, useRawImportAction; wrappers opcionales                                  |
+| **4** | [step-04-feedback-phase-hooks.md](Construction%20Steps/step-04-feedback-phase-hooks.md)             | Feedback: useRawProgress, useRawStatus (errorDetail), useRawAbort; RawErrorBoundary; useImporter().metrics; wrappers opcionales                                                               |
+| **5** | [step-05-data-phase-hooks.md](Construction%20Steps/step-05-data-phase-hooks.md)                     | Datos: useRawDataTable, useRawTableHead, useRawTableBody (getRowProps), useRawTableRow, useRawCell (getCellProps, getEditInputProps), useRawErrorBadge; A11y; wrappers opcionales             |
+| **6** | [step-06-view-phase-hooks.md](Construction%20Steps/step-06-view-phase-hooks.md)                     | Salida: useRawPagination, useRawFilterToggle, useRawExport, useRawPersistence; wrappers opcionales                                                                                            |
+| **7** | [step-07-orchestrator-workflow.md](Construction%20Steps/step-07-orchestrator-workflow.md)           | Orquestador: RawImporterWorkflow (compone hooks o wrappers por vista: IDLE → FilePicker; MAPPING → Mapping; PROCESSING → Progress + Abort; RESULT → Toolbar + Grid + Footer). **Completado.** |
 
 ---
 
 ## Estado actual
 
-- **Step completado:** **Step 6** (View Phase). Implementados **useRawPagination** (page, pageSize, totalRows, setPage, setPageSize), **useRawFilterToggle** (filterMode, setFilterMode), **useRawExport** (downloadCSV, downloadJSON), **useRawPersistence** (hasRecoverableSession, recoverSession, clearSession); **ViewPhaseContext**, **RawViewPhaseProvider**; tipo **FilterMode** en `src/shared/types/view-phase.ts`. Los cuatro hooks leen del mismo contexto (una sola llamada a useSheetView del headless). Siguiente: Step 7 (orchestrator).
+- **Step completado:** **Step 7** (Orchestrator). Implementado **RawImporterWorkflow**: orquestador que usa **useStatusView()** y compone hooks/wrappers por vista (idle → RawFilePicker; mapping → RawMappingTable + RawImportAction; process → RawProgressDisplay, RawStatusIndicator, RawAbortButton; result → RawViewPhaseProvider + Toolbar/Grid/Footer); slots opcionales renderIdle, renderMapping, renderProcess, renderResult, renderError; `data-ris-ui="raw-importer-workflow"`. Tests y Storybook (Default, WithCustomSlots).
 - **Artefactos Step 2:** hooks **useRawImporterRoot**, **useStatusView**; tipos **StatusView**, **getViewFromState** en `src/shared/types/`; wrappers **RawImporterRoot**, **RawStatusGuard**.
 - **Artefactos Step 3:** hooks **useRawFilePicker**, **useRawMappingTable**, **useRawMappingRow**, **useRawMappingSuggest**, **useRawImportAction**; tipos **LayoutFieldOption**, **MappingStatus**, **RawMappingRowContext**, **RawMappingSuggestContext**, **getLayoutFieldOptions**; utilidad **getSimilarity** en `src/shared/utils/fuzzy-similarity.ts`; wrappers RawFilePicker, RawMappingTable, RawMappingRow, RawMappingSuggest, RawImportAction.
 - **Artefactos Step 4:** hooks **useRawProgress**, **useRawStatus**, **useRawAbort**, **useImporterMetrics**; componente **RawErrorBoundary**; wrappers RawProgressDisplay, RawStatusIndicator, RawAbortButton.
 - **Artefactos Step 5:** hooks **useRawDataTable**, **useRawTableHead**, **useRawTableBody**, **useRawTableRow**, **useRawCell**, **useRawErrorBadge**; **DataTableContext**, **RawDataTableProvider**; tipos en `src/shared/types/data-phase.ts`. Wrappers RawDataTable, RawTableHead, RawTableBody, RawTableRow, RawTableCell, RawErrorBadge son opcionales (no implementados en este step).
 - **Artefactos Step 6:** hooks **useRawPagination**, **useRawFilterToggle**, **useRawExport**, **useRawPersistence**; **ViewPhaseContext**, **RawViewPhaseProvider**; tipo **FilterMode** en `src/shared/types/view-phase.ts`. Wrappers RawPagination, RawFilterToggle, RawExportButton, RawPersistenceBanner son opcionales (no implementados en este step).
-- **Prioridad:** Implementar y documentar los **hooks useRaw\*** como núcleo (getRootProps, getInputProps, getCellProps, getRowProps, etc.); los wrappers (RawFilePicker, RawTableCell, etc.) son capa opcional que usa esos hooks. El orquestador **RawImporterWorkflow** (Step 7) compone hooks (o wrappers) por vista.
+- **Artefactos Step 7:** componente **RawImporterWorkflow** en `src/components/RawImporterWorkflow/` (RawImporterWorkflow.tsx, types.ts, index.ts, RawImporterWorkflow.test.tsx); stories RawImporterWorkflow.stories.tsx.
+- **Prioridad:** Hooks useRaw\* documentados como núcleo; wrappers opcionales. **RawImporterWorkflow** (Step 7) implementado y compone hooks/wrappers por vista.
 - **Documentación:** `ai-context.md` se actualiza por **hook** (getters, estado, acciones) para que integradores y futuras libs de UI sepan consumir la lib solo con hooks. La lib mantiene **contrato estándar** (data-_, aria-_) y **no integra** virtualización ni UI; el consumidor aplica estilos e integraciones.
 
 ---

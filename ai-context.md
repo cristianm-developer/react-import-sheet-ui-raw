@@ -47,6 +47,7 @@ _(Actualizar al finalizar cada hook: nombre, retorno (estado, acciones, getters)
 | -------------------------------------------- | -------------------------------------------------------------------------------- | ------ |
 | **useRawImporterRoot** / RawImporterRoot     | providerProps + rootConfig; monta ImporterProvider + RootConfigProvider.         | Step 2 |
 | **useStatusView** / RawStatusGuard           | Vista actual (idle \| mapping \| process \| result \| error) + datos headless.   | Step 2 |
+| **RawImporterWorkflow**                      | Orquestador: compone hooks/wrappers por vista; slots opcionales.                 | Step 7 |
 | **useRawFilePicker** / RawFilePicker         | isDragging, getRootProps, getInputProps; conexión con processFile.               | Step 3 |
 | **useRawMappingTable** / RawMappingTable     | Filas de mapeo (useConvert); datos por fila para useRawMappingRow.               | Step 3 |
 | **useRawMappingRow** / RawMappingRow         | Por fila: headerOriginal, options, value, onChange, mappingStatus.               | Step 3 |
@@ -137,6 +138,46 @@ if (view === 'error') return <ErrorMessage />;
 - **Props:** `renderIdle?`, `renderMapping?`, `renderProcess?`, `renderResult?`, `renderError?` (cada uno `(data: UseStatusViewReturn) => ReactNode`), `className?`, `style?`.
 - **Comportamiento:** llama a **useStatusView()** y renderiza el slot correspondiente al **view** actual; `data-ris-ui="raw-status-guard"`.
 - **Uso:** dentro de RawImporterRoot (o del árbol ImporterProvider + RootConfigProvider).
+
+---
+
+### RawImporterWorkflow (orquestador opcional — Step 7)
+
+- **Props:** `className?`, `style?`, **renderIdle?**, **renderMapping?**, **renderProcess?**, **renderResult?**, **renderError?** (cada uno `() => ReactNode`). Si no se pasan slots, se usan composiciones por defecto con hooks/wrappers.
+- **Comportamiento:** usa **useStatusView()** para obtener la vista actual y según ella renderiza el slot o la composición por defecto. Sin CSS; solo estructura y composición. `data-ris-ui="raw-importer-workflow"`. Ref al contenedor raíz.
+- **Tabla estado → contenido por defecto:**
+
+| Vista       | Contenido por defecto                                                                                                                                                                                                                                      |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **idle**    | useRawFilePicker / RawFilePicker.                                                                                                                                                                                                                          |
+| **mapping** | useRawMappingTable, useRawMappingRow, useRawMappingSuggest, useRawImportAction (o wrappers RawMappingTable, RawMappingRow, RawMappingSuggest, RawImportAction).                                                                                            |
+| **process** | useRawProgress, useRawStatus, useRawAbort (o RawProgressDisplay, RawStatusIndicator, RawAbortButton).                                                                                                                                                      |
+| **result**  | Toolbar (useRawFilterToggle, useRawExport) + Grid (useRawDataTable, useRawTableHead, useRawTableBody, useRawTableRow, useRawCell, useRawErrorBadge) + Footer (useRawPagination, useRawPersistence), dentro de RawViewPhaseProvider y RawDataTableProvider. |
+| **error**   | Mismo que idle (reintentar).                                                                                                                                                                                                                               |
+
+**Ejemplo mínimo (llave en mano):**
+
+```tsx
+<RawImporterRoot layout={mySheetLayout} engine="auto">
+  <RawImporterWorkflow />
+</RawImporterRoot>
+```
+
+**Ejemplo con slots (reemplazar composiciones):**
+
+```tsx
+<RawImporterRoot layout={mySheetLayout} engine="auto">
+  <RawImporterWorkflow
+    renderIdle={() => <MyFileDropZone />}
+    renderMapping={() => <MyMappingUI />}
+    renderProcess={() => <MyProgress />}
+    renderResult={() => <MyGridAndToolbar />}
+    renderError={() => <MyErrorRetry />}
+  />
+</RawImporterRoot>
+```
+
+- **Uso:** Dentro de **RawImporterRoot**. El layout se pasa al Root; el Workflow lo obtiene del contexto. Quien prefiera control total puede usar RawImporterRoot + useStatusView + hooks y montar su propia UI sin el Workflow.
 
 ---
 
